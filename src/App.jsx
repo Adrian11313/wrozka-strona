@@ -11,6 +11,7 @@ export default function App() {
     email: "",
     packageName: "Szybka odpowiedź",
     question: "",
+    customAmount: "",
   });
 
   const [loadingQuick, setLoadingQuick] = useState(null);
@@ -25,18 +26,28 @@ export default function App() {
         price: "29.00",
         label: "29 zł",
         description: "Jedno pytanie i szybka odpowiedź.",
+        isCustomAmount: false,
       },
       {
         name: "Rozkład dnia",
         price: "59.00",
         label: "59 zł",
         description: "Szersza interpretacja i wskazówki.",
+        isCustomAmount: false,
       },
       {
         name: "Sesja premium",
         price: "119.00",
         label: "119 zł",
         description: "Rozbudowana analiza z priorytetem.",
+        isCustomAmount: false,
+      },
+      {
+        name: "Dowolny datek",
+        price: "",
+        label: "Wpłać ile chcesz",
+        description: "Wesprzyj Wróżkę Kamelii dowolną kwotą.",
+        isCustomAmount: true,
       },
     ],
     []
@@ -58,7 +69,11 @@ export default function App() {
       subtitle: "Szybka konsultacja i płatność online",
       image: kameliaForm,
       action: () => {
-        setForm((prev) => ({ ...prev, packageName: "Szybka odpowiedź" }));
+        setForm((prev) => ({
+          ...prev,
+          packageName: "Szybka odpowiedź",
+          message: "",
+        }));
         setMessage("");
         setShowModal(true);
       },
@@ -117,6 +132,26 @@ export default function App() {
     return data.details || data.error || data.message || "Nie udało się utworzyć płatności.";
   };
 
+  const getNormalizedCustomAmount = (value) => {
+    const normalized = String(value || "").replace(",", ".").trim();
+
+    if (!normalized) {
+      throw new Error("Wpisz kwotę datku.");
+    }
+
+    const parsed = Number(normalized);
+
+    if (!Number.isFinite(parsed)) {
+      throw new Error("Kwota musi być poprawną liczbą.");
+    }
+
+    if (parsed < 1) {
+      throw new Error("Minimalna kwota datku to 1 zł.");
+    }
+
+    return parsed.toFixed(2);
+  };
+
   const createPaymentRequest = async ({
     name,
     email,
@@ -154,6 +189,17 @@ export default function App() {
   };
 
   const handleQuickOrder = async (plan) => {
+    if (plan.isCustomAmount) {
+      setForm((prev) => ({
+        ...prev,
+        packageName: "Dowolny datek",
+        question: "",
+      }));
+      setMessage("");
+      setShowModal(true);
+      return;
+    }
+
     setLoadingQuick(plan.name);
     setMessage("");
 
@@ -189,12 +235,22 @@ export default function App() {
         throw new Error("Wpisz adres e-mail.");
       }
 
+      const isCustomAmountPlan = form.packageName === "Dowolny datek";
+
+      const finalAmount = isCustomAmountPlan
+        ? getNormalizedCustomAmount(form.customAmount)
+        : selectedPlan.price;
+
+      const finalDescription = isCustomAmountPlan
+        ? `Dowolny datek | Kwota: ${finalAmount} zł`
+        : `${form.packageName} | Pytanie: ${form.question.trim() || "brak"}`;
+
       const paymentUrl = await createPaymentRequest({
         name: form.name.trim(),
         email: form.email.trim(),
-        amount: selectedPlan.price,
-        description: `${form.packageName} | Pytanie: ${form.question.trim() || "brak"}`,
-        question: form.question.trim(),
+        amount: finalAmount,
+        description: finalDescription,
+        question: isCustomAmountPlan ? "" : form.question.trim(),
         package_name: form.packageName,
       });
 
@@ -780,7 +836,10 @@ export default function App() {
 
           <form onSubmit={handleFormSubmit}>
             <div style={styles.formText}>
-              Podaj imię, e-mail, wybierz pakiet i wpisz pytanie. Po kliknięciu przejdziesz do płatności Tpay.
+              Podaj imię, e-mail, wybierz pakiet i przejdź do płatności Tpay.
+              {form.packageName !== "Dowolny datek"
+                ? " Możesz też wpisać pytanie do wróżki."
+                : " W przypadku datku wpisz własną kwotę."}
             </div>
 
             <input
@@ -814,14 +873,27 @@ export default function App() {
               ))}
             </select>
 
-            <textarea
-              name="question"
-              placeholder="Wpisz pytanie do wróżki..."
-              value={form.question}
-              onChange={handleChange}
-              rows={6}
-              style={styles.textarea}
-            />
+            {form.packageName === "Dowolny datek" && (
+              <input
+                type="text"
+                name="customAmount"
+                placeholder="Kwota datku, np. 20"
+                value={form.customAmount}
+                onChange={handleChange}
+                style={styles.input}
+              />
+            )}
+
+            {form.packageName !== "Dowolny datek" && (
+              <textarea
+                name="question"
+                placeholder="Wpisz pytanie do wróżki..."
+                value={form.question}
+                onChange={handleChange}
+                rows={6}
+                style={styles.textarea}
+              />
+            )}
 
             <button
               type="submit"
