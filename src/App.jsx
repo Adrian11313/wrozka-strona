@@ -11,12 +11,19 @@ export default function App() {
     email: "",
     packageName: "Szybka odpowiedź",
     question: "",
-    customAmount: "",
+  });
+
+  const [donation, setDonation] = useState({
+    name: "",
+    email: "",
+    amount: "",
   });
 
   const [loadingQuick, setLoadingQuick] = useState(null);
   const [loadingForm, setLoadingForm] = useState(false);
+  const [loadingDonation, setLoadingDonation] = useState(false);
   const [message, setMessage] = useState("");
+  const [donationMessage, setDonationMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
 
   const plans = useMemo(
@@ -26,28 +33,18 @@ export default function App() {
         price: "29.00",
         label: "29 zł",
         description: "Jedno pytanie i szybka odpowiedź.",
-        isCustomAmount: false,
       },
       {
         name: "Rozkład dnia",
         price: "59.00",
         label: "59 zł",
         description: "Szersza interpretacja i wskazówki.",
-        isCustomAmount: false,
       },
       {
         name: "Sesja premium",
         price: "119.00",
         label: "119 zł",
         description: "Rozbudowana analiza z priorytetem.",
-        isCustomAmount: false,
-      },
-      {
-        name: "Dowolny datek",
-        price: "",
-        label: "Wpłać ile chcesz",
-        description: "Wesprzyj Wróżkę Kamelii dowolną kwotą.",
-        isCustomAmount: true,
       },
     ],
     []
@@ -72,7 +69,6 @@ export default function App() {
         setForm((prev) => ({
           ...prev,
           packageName: "Szybka odpowiedź",
-          message: "",
         }));
         setMessage("");
         setShowModal(true);
@@ -127,6 +123,14 @@ export default function App() {
     }));
   };
 
+  const handleDonationChange = (e) => {
+    const { name, value } = e.target;
+    setDonation((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   const getErrorMessageFromResponse = (data) => {
     if (!data) return "Wystąpił błąd.";
     return data.details || data.error || data.message || "Nie udało się utworzyć płatności.";
@@ -136,7 +140,7 @@ export default function App() {
     const normalized = String(value || "").replace(",", ".").trim();
 
     if (!normalized) {
-      throw new Error("Wpisz kwotę datku.");
+      throw new Error("Wpisz kwotę wpłaty.");
     }
 
     const parsed = Number(normalized);
@@ -146,7 +150,7 @@ export default function App() {
     }
 
     if (parsed < 1) {
-      throw new Error("Minimalna kwota datku to 1 zł.");
+      throw new Error("Minimalna kwota wpłaty to 1 zł.");
     }
 
     return parsed.toFixed(2);
@@ -189,17 +193,6 @@ export default function App() {
   };
 
   const handleQuickOrder = async (plan) => {
-    if (plan.isCustomAmount) {
-      setForm((prev) => ({
-        ...prev,
-        packageName: "Dowolny datek",
-        question: "",
-      }));
-      setMessage("");
-      setShowModal(true);
-      return;
-    }
-
     setLoadingQuick(plan.name);
     setMessage("");
 
@@ -235,22 +228,12 @@ export default function App() {
         throw new Error("Wpisz adres e-mail.");
       }
 
-      const isCustomAmountPlan = form.packageName === "Dowolny datek";
-
-      const finalAmount = isCustomAmountPlan
-        ? getNormalizedCustomAmount(form.customAmount)
-        : selectedPlan.price;
-
-      const finalDescription = isCustomAmountPlan
-        ? `Dowolny datek | Kwota: ${finalAmount} zł`
-        : `${form.packageName} | Pytanie: ${form.question.trim() || "brak"}`;
-
       const paymentUrl = await createPaymentRequest({
         name: form.name.trim(),
         email: form.email.trim(),
-        amount: finalAmount,
-        description: finalDescription,
-        question: isCustomAmountPlan ? "" : form.question.trim(),
+        amount: selectedPlan.price,
+        description: `${form.packageName} | Pytanie: ${form.question.trim() || "brak"}`,
+        question: form.question.trim(),
         package_name: form.packageName,
       });
 
@@ -259,6 +242,39 @@ export default function App() {
       setMessage(error.message || "Wystąpił błąd.");
     } finally {
       setLoadingForm(false);
+    }
+  };
+
+  const handleDonationSubmit = async (e) => {
+    e.preventDefault();
+    setLoadingDonation(true);
+    setDonationMessage("");
+
+    try {
+      if (donation.name.trim().length < 3) {
+        throw new Error("Imię musi mieć co najmniej 3 znaki.");
+      }
+
+      if (!donation.email.trim()) {
+        throw new Error("Wpisz adres e-mail.");
+      }
+
+      const finalAmount = getNormalizedCustomAmount(donation.amount);
+
+      const paymentUrl = await createPaymentRequest({
+        name: donation.name.trim(),
+        email: donation.email.trim(),
+        amount: finalAmount,
+        description: `Dowolna wpłata | Kwota: ${finalAmount} zł`,
+        question: "",
+        package_name: "Dowolna wpłata",
+      });
+
+      window.location.href = paymentUrl;
+    } catch (error) {
+      setDonationMessage(error.message || "Wystąpił błąd.");
+    } finally {
+      setLoadingDonation(false);
     }
   };
 
@@ -525,6 +541,26 @@ export default function App() {
       boxShadow: "0 10px 24px rgba(192,132,252,0.24)",
       fontSize: "15px",
     },
+    donationCard: {
+      borderRadius: "24px",
+      background: "rgba(255,255,255,0.09)",
+      border: "1px solid rgba(255,255,255,0.12)",
+      padding: "18px",
+      boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
+      marginTop: "16px",
+    },
+    donationTitle: {
+      fontSize: "24px",
+      fontWeight: 900,
+      color: "#fef3c7",
+      marginBottom: "8px",
+    },
+    donationDesc: {
+      fontSize: "15px",
+      lineHeight: 1.55,
+      color: "#f5d0fe",
+      marginBottom: "14px",
+    },
     footer: {
       textAlign: "center",
       fontSize: "12px",
@@ -789,16 +825,67 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => handleQuickOrder(plan)}
-                    disabled={loadingQuick !== null || loadingForm}
+                    disabled={loadingQuick !== null || loadingForm || loadingDonation}
                     style={{
                       ...styles.orderBtn,
-                      opacity: loadingQuick !== null || loadingForm ? 0.72 : 1,
+                      opacity: loadingQuick !== null || loadingForm || loadingDonation ? 0.72 : 1,
                     }}
                   >
                     {loadingQuick === plan.name ? "Przetwarzanie..." : "Zamów i zapłać"}
                   </button>
                 </div>
               ))}
+            </div>
+          </section>
+
+          <section style={styles.sectionWrap}>
+            <div style={styles.donationCard}>
+              <div style={styles.donationTitle}>Dowolna wpłata</div>
+              <div style={styles.donationDesc}>
+                Jeśli chcesz po prostu wesprzeć Wróżkę Kameliię, wpisz dowolną kwotę i przejdź do płatności.
+              </div>
+
+              <form onSubmit={handleDonationSubmit}>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Imię"
+                  value={donation.name}
+                  onChange={handleDonationChange}
+                  style={styles.input}
+                />
+
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="E-mail"
+                  value={donation.email}
+                  onChange={handleDonationChange}
+                  style={styles.input}
+                />
+
+                <input
+                  type="text"
+                  name="amount"
+                  placeholder="Kwota wpłaty, np. 20"
+                  value={donation.amount}
+                  onChange={handleDonationChange}
+                  style={styles.input}
+                />
+
+                <button
+                  type="submit"
+                  disabled={loadingDonation || loadingForm || loadingQuick !== null}
+                  style={{
+                    ...styles.submitBtn,
+                    opacity: loadingDonation || loadingForm || loadingQuick !== null ? 0.72 : 1,
+                  }}
+                >
+                  {loadingDonation ? "Przetwarzanie..." : "Wpłać teraz"}
+                </button>
+
+                {donationMessage && <div style={styles.error}>{donationMessage}</div>}
+              </form>
             </div>
           </section>
 
@@ -836,10 +923,7 @@ export default function App() {
 
           <form onSubmit={handleFormSubmit}>
             <div style={styles.formText}>
-              Podaj imię, e-mail, wybierz pakiet i przejdź do płatności Tpay.
-              {form.packageName !== "Dowolny datek"
-                ? " Możesz też wpisać pytanie do wróżki."
-                : " W przypadku datku wpisz własną kwotę."}
+              Podaj imię, e-mail, wybierz pakiet i przejdź do płatności Tpay. Możesz też wpisać pytanie do wróżki.
             </div>
 
             <input
@@ -873,34 +957,21 @@ export default function App() {
               ))}
             </select>
 
-            {form.packageName === "Dowolny datek" && (
-              <input
-                type="text"
-                name="customAmount"
-                placeholder="Kwota datku, np. 20"
-                value={form.customAmount}
-                onChange={handleChange}
-                style={styles.input}
-              />
-            )}
-
-            {form.packageName !== "Dowolny datek" && (
-              <textarea
-                name="question"
-                placeholder="Wpisz pytanie do wróżki..."
-                value={form.question}
-                onChange={handleChange}
-                rows={6}
-                style={styles.textarea}
-              />
-            )}
+            <textarea
+              name="question"
+              placeholder="Wpisz pytanie do wróżki..."
+              value={form.question}
+              onChange={handleChange}
+              rows={6}
+              style={styles.textarea}
+            />
 
             <button
               type="submit"
-              disabled={loadingForm || loadingQuick !== null}
+              disabled={loadingForm || loadingQuick !== null || loadingDonation}
               style={{
                 ...styles.submitBtn,
-                opacity: loadingForm || loadingQuick !== null ? 0.72 : 1,
+                opacity: loadingForm || loadingQuick !== null || loadingDonation ? 0.72 : 1,
               }}
             >
               {loadingForm ? "Przetwarzanie..." : "Przejdź do płatności"}
