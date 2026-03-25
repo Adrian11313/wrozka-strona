@@ -266,6 +266,37 @@ export default function AdminPage() {
         return `${text.slice(0, maxLength)}...`;
     };
 
+    const parseOrderDate = (value) => {
+        if (!value) return null;
+
+        const normalized = String(value).replace(" ", "T");
+        const candidate = normalized.endsWith("Z") ? normalized : `${normalized}Z`;
+        const date = new Date(candidate);
+
+        if (Number.isNaN(date.getTime())) {
+            return null;
+        }
+
+        return date;
+    };
+
+    const formatDateTime = (value) => {
+        const date = parseOrderDate(value);
+
+        if (!date) {
+            return value || "-";
+        }
+
+        return new Intl.DateTimeFormat("pl-PL", {
+            timeZone: "Europe/Warsaw",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        }).format(date);
+    };
+
     const filteredOrders = useMemo(() => {
         if (filter === "queue") {
             return orders.filter(
@@ -314,6 +345,7 @@ export default function AdminPage() {
                     order.package_name ?? "",
                     order.question ?? "",
                     order.created_at ?? "",
+                    order.updated_at ?? "",
                 ]
                     .join(" ")
                     .toLowerCase();
@@ -323,18 +355,24 @@ export default function AdminPage() {
         }
 
         result.sort((a, b) => {
-            const aTime = new Date(a.created_at || 0).getTime();
-            const bTime = new Date(b.created_at || 0).getTime();
+            const aCreated = parseOrderDate(a.created_at)?.getTime() ?? 0;
+            const bCreated = parseOrderDate(b.created_at)?.getTime() ?? 0;
+            const aUpdated = parseOrderDate(a.updated_at)?.getTime() ?? aCreated;
+            const bUpdated = parseOrderDate(b.updated_at)?.getTime() ?? bCreated;
 
-            if (sortMode === "oldest") {
-                return aTime - bTime;
+            if (filter === "queue") {
+                return aUpdated - bUpdated;
             }
 
-            return bTime - aTime;
+            if (sortMode === "oldest") {
+                return aCreated - bCreated;
+            }
+
+            return bCreated - aCreated;
         });
 
         return result;
-    }, [filteredOrders, search, sortMode]);
+    }, [filteredOrders, search, sortMode, filter]);
 
     const maxOrdersForChart = Math.max(...(stats?.daily_stats?.map((x) => x.orders_count) || [1]), 1);
     const maxRevenueForChart = Math.max(...(stats?.daily_stats?.map((x) => x.revenue) || [1]), 1);
@@ -518,6 +556,12 @@ export default function AdminPage() {
             color: "#fde68a",
             marginBottom: "6px",
         },
+        subId: {
+            color: "#93c5fd",
+            fontSize: "13px",
+            fontWeight: 700,
+            marginBottom: "6px",
+        },
         email: {
             color: "#cbd5e1",
             fontSize: "14px",
@@ -696,7 +740,7 @@ export default function AdminPage() {
             return <span style={styles.badgeDone}>ZREALIZOWANE</span>;
         }
 
-        return <span style={styles.badgeOther}>{status || "BRAK STATUSU"}</span>;
+        return <span style={styles.badgeOther}>{status || "nowe"}</span>;
     };
 
     const filterButtons = [
@@ -786,16 +830,23 @@ export default function AdminPage() {
                         {loading && <div style={styles.info}>Ładowanie danych...</div>}
 
                         <div style={styles.grid}>
-                            {visibleOrders.map((order) => {
+                            {visibleOrders.map((order, index) => {
                                 const isExpanded = !!expandedOrders[order.id];
+                                const queuePosition = filter === "queue" ? index + 1 : null;
 
                                 return (
                                     <div key={order.id} style={styles.card}>
                                         <div style={styles.topRow}>
                                             <div>
+                                                {queuePosition !== null && (
+                                                    <div style={styles.subId}>Pozycja w kolejce: {queuePosition}</div>
+                                                )}
+
                                                 <div style={styles.id}>
-                                                    #{order.id} — {order.customer_name}
+                                                    {order.customer_name}
                                                 </div>
+
+                                                <div style={styles.subId}>Zamówienie #{order.id}</div>
                                                 <div style={styles.email}>{order.customer_email}</div>
                                             </div>
 
@@ -824,8 +875,13 @@ export default function AdminPage() {
                                             </div>
 
                                             <div style={styles.row}>
-                                                <div style={styles.label}>Data</div>
-                                                <div style={styles.value}>{order.created_at || "-"}</div>
+                                                <div style={styles.label}>Data utworzenia</div>
+                                                <div style={styles.value}>{formatDateTime(order.created_at)}</div>
+                                            </div>
+
+                                            <div style={styles.row}>
+                                                <div style={styles.label}>Data aktualizacji</div>
+                                                <div style={styles.value}>{formatDateTime(order.updated_at)}</div>
                                             </div>
                                         </div>
 
