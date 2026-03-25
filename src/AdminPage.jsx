@@ -11,6 +11,7 @@ export default function AdminPage() {
     const [error, setError] = useState("");
     const [syncingOrderId, setSyncingOrderId] = useState(null);
     const [completingOrderId, setCompletingOrderId] = useState(null);
+    const [closingOrderId, setClosingOrderId] = useState(null);
     const [savingNotesOrderId, setSavingNotesOrderId] = useState(null);
     const [notesDrafts, setNotesDrafts] = useState({});
     const [filter, setFilter] = useState("queue");
@@ -197,6 +198,39 @@ export default function AdminPage() {
         }
     };
 
+    const closeOrder = async (orderId) => {
+        try {
+            setError("");
+            setClosingOrderId(orderId);
+
+            const response = await fetch(
+                `${API_BASE}/api/admin/orders/${orderId}/close`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                }
+            );
+
+            const data = await response.json();
+
+            if (response.status === 401) {
+                navigate("/admin-login");
+                return;
+            }
+
+            if (!response.ok) {
+                throw new Error(data.error || "Nie udało się zamknąć zamówienia.");
+            }
+
+            await loadOrders();
+            await loadStats();
+        } catch (err) {
+            setError(err.message || "Błąd zamykania zamówienia.");
+        } finally {
+            setClosingOrderId(null);
+        }
+    };
+
     const saveNotes = async (orderId) => {
         try {
             setError("");
@@ -302,7 +336,8 @@ export default function AdminPage() {
             return orders.filter(
                 (order) =>
                     (order.payment_status || "").toLowerCase() === "oplacone" &&
-                    (order.order_status || "").toLowerCase() !== "zrealizowane"
+                    (order.order_status || "").toLowerCase() !== "zrealizowane" &&
+                    (order.order_status || "").toLowerCase() !== "zamkniete"
             );
         }
 
@@ -318,13 +353,22 @@ export default function AdminPage() {
 
         if (filter === "pending") {
             return orders.filter(
-                (order) => (order.payment_status || "").toLowerCase() === "oczekuje_na_platnosc"
+                (order) =>
+                    (order.payment_status || "").toLowerCase() === "oczekuje_na_platnosc" &&
+                    (order.order_status || "").toLowerCase() !== "zamkniete" &&
+                    (order.order_status || "").toLowerCase() !== "zrealizowane"
             );
         }
 
         if (filter === "done") {
             return orders.filter(
                 (order) => (order.order_status || "").toLowerCase() === "zrealizowane"
+            );
+        }
+
+        if (filter === "closed") {
+            return orders.filter(
+                (order) => (order.order_status || "").toLowerCase() === "zamkniete"
             );
         }
 
@@ -346,6 +390,7 @@ export default function AdminPage() {
                     order.question ?? "",
                     order.created_at ?? "",
                     order.updated_at ?? "",
+                    order.paid_at ?? "",
                 ]
                     .join(" ")
                     .toLowerCase();
@@ -357,11 +402,11 @@ export default function AdminPage() {
         result.sort((a, b) => {
             const aCreated = parseOrderDate(a.created_at)?.getTime() ?? 0;
             const bCreated = parseOrderDate(b.created_at)?.getTime() ?? 0;
-            const aUpdated = parseOrderDate(a.updated_at)?.getTime() ?? aCreated;
-            const bUpdated = parseOrderDate(b.updated_at)?.getTime() ?? bCreated;
+            const aPaid = parseOrderDate(a.paid_at)?.getTime() ?? aCreated;
+            const bPaid = parseOrderDate(b.paid_at)?.getTime() ?? bCreated;
 
             if (filter === "queue") {
-                return aUpdated - bUpdated;
+                return aPaid - bPaid;
             }
 
             if (sortMode === "oldest") {
@@ -494,6 +539,15 @@ export default function AdminPage() {
             fontWeight: 700,
             cursor: "pointer",
         },
+        closeBtn: {
+            padding: "10px 14px",
+            borderRadius: "10px",
+            border: "none",
+            background: "#64748b",
+            color: "#fff",
+            fontWeight: 700,
+            cursor: "pointer",
+        },
         saveBtn: {
             padding: "10px 14px",
             borderRadius: "10px",
@@ -590,6 +644,14 @@ export default function AdminPage() {
         badgeDone: {
             background: "#1d4ed8",
             color: "#dbeafe",
+            padding: "6px 10px",
+            borderRadius: "999px",
+            fontSize: "12px",
+            fontWeight: 800,
+        },
+        badgeClosed: {
+            background: "#475569",
+            color: "#e2e8f0",
             padding: "6px 10px",
             borderRadius: "999px",
             fontSize: "12px",
@@ -740,15 +802,20 @@ export default function AdminPage() {
             return <span style={styles.badgeDone}>ZREALIZOWANE</span>;
         }
 
+        if (normalized === "zamkniete") {
+            return <span style={styles.badgeClosed}>ZAMKNIĘTE</span>;
+        }
+
         return <span style={styles.badgeOther}>{status || "nowe"}</span>;
     };
 
     const filterButtons = [
         { key: "queue", label: "Kolejka" },
-        { key: "all", label: "Wszystkie" },
         { key: "pending", label: "Oczekuje na płatność" },
-        { key: "paid", label: "Tylko opłacone" },
-        { key: "done", label: "Tylko zrealizowane" },
+        { key: "paid", label: "Opłacone" },
+        { key: "done", label: "Zrealizowane" },
+        { key: "closed", label: "Zamknięte" },
+        { key: "all", label: "Wszystkie" },
     ];
 
     return (
@@ -823,7 +890,7 @@ export default function AdminPage() {
                         </div>
 
                         <div style={styles.info}>
-                            Liczba widocznych zamówień: <b>{visibleOrders.length}</b> / {orders.length}
+                            Zamówienia w tym widoku: <b>{visibleOrders.length}</b> • Wszystkie w systemie: {orders.length}
                         </div>
 
                         {error && <div style={styles.error}>{error}</div>}
@@ -833,6 +900,24 @@ export default function AdminPage() {
                             {visibleOrders.map((order, index) => {
                                 const isExpanded = !!expandedOrders[order.id];
                                 const queuePosition = filter === "queue" ? index + 1 : null;
+
+                                const paymentStatus = (order.payment_status || "").toLowerCase();
+                                const orderStatus = (order.order_status || "").toLowerCase();
+
+                                const canSyncPayment =
+                                    paymentStatus !== "oplacone" &&
+                                    orderStatus !== "zamkniete" &&
+                                    orderStatus !== "zrealizowane";
+
+                                const canComplete =
+                                    paymentStatus === "oplacone" &&
+                                    orderStatus !== "zrealizowane" &&
+                                    orderStatus !== "zamkniete";
+
+                                const canClose =
+                                    paymentStatus !== "oplacone" &&
+                                    orderStatus !== "zrealizowane" &&
+                                    orderStatus !== "zamkniete";
 
                                 return (
                                     <div key={order.id} style={styles.card}>
@@ -880,8 +965,10 @@ export default function AdminPage() {
                                             </div>
 
                                             <div style={styles.row}>
-                                                <div style={styles.label}>Data aktualizacji</div>
-                                                <div style={styles.value}>{formatDateTime(order.updated_at)}</div>
+                                                <div style={styles.label}>Data opłacenia</div>
+                                                <div style={styles.value}>
+                                                    {order.paid_at ? formatDateTime(order.paid_at) : "-"}
+                                                </div>
                                             </div>
                                         </div>
 
@@ -902,6 +989,11 @@ export default function AdminPage() {
                                                                 <span style={styles.empty}>Brak pytania</span>
                                                             )}
                                                         </div>
+                                                    </div>
+
+                                                    <div style={styles.row}>
+                                                        <div style={styles.label}>Data aktualizacji</div>
+                                                        <div style={styles.value}>{formatDateTime(order.updated_at)}</div>
                                                     </div>
 
                                                     <div style={styles.row}>
@@ -945,7 +1037,7 @@ export default function AdminPage() {
                                                 </div>
 
                                                 <div style={styles.actions}>
-                                                    {(order.payment_status || "").toLowerCase() !== "oplacone" && (
+                                                    {canSyncPayment && (
                                                         <button
                                                             style={{
                                                                 ...styles.syncBtn,
@@ -960,7 +1052,7 @@ export default function AdminPage() {
                                                         </button>
                                                     )}
 
-                                                    {(order.order_status || "").toLowerCase() !== "zrealizowane" && (
+                                                    {canComplete && (
                                                         <button
                                                             style={{
                                                                 ...styles.completeBtn,
@@ -972,6 +1064,21 @@ export default function AdminPage() {
                                                             {completingOrderId === order.id
                                                                 ? "Zapisywanie..."
                                                                 : "Oznacz jako zrealizowane"}
+                                                        </button>
+                                                    )}
+
+                                                    {canClose && (
+                                                        <button
+                                                            style={{
+                                                                ...styles.closeBtn,
+                                                                opacity: closingOrderId === order.id ? 0.7 : 1,
+                                                            }}
+                                                            onClick={() => closeOrder(order.id)}
+                                                            disabled={closingOrderId === order.id}
+                                                        >
+                                                            {closingOrderId === order.id
+                                                                ? "Zamykanie..."
+                                                                : "Zamknij jako nieopłacone"}
                                                         </button>
                                                     )}
 
