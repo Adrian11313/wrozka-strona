@@ -426,95 +426,116 @@ export default function AdminPage() {
     const styles = {
         page: {
             minHeight: "100vh",
-            background: "#0f172a",
+            background: "linear-gradient(180deg, #071226 0%, #0b1730 100%)",
             color: "#f8fafc",
             fontFamily: "Arial, sans-serif",
-            padding: "24px",
+            padding: "28px",
         },
         wrap: {
-            maxWidth: "1400px",
+            maxWidth: "1440px",
             margin: "0 auto",
         },
+        hero: {
+            marginBottom: "22px",
+            padding: "22px 24px",
+            borderRadius: "22px",
+            background: "linear-gradient(135deg, rgba(124,58,237,0.22) 0%, rgba(37,99,235,0.16) 100%)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 18px 50px rgba(0,0,0,0.22)",
+        },
         title: {
-            fontSize: "36px",
+            fontSize: "38px",
             fontWeight: 900,
             marginBottom: "8px",
+            letterSpacing: "-0.02em",
         },
         subtitle: {
             color: "#cbd5e1",
-            marginBottom: "24px",
+            fontSize: "15px",
+            lineHeight: 1.5,
         },
         toolbar: {
             display: "flex",
             gap: "12px",
-            marginBottom: "20px",
+            marginBottom: "18px",
             flexWrap: "wrap",
             alignItems: "center",
+        },
+        sectionCard: {
+            padding: "16px",
+            borderRadius: "18px",
+            background: "rgba(15, 23, 42, 0.9)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.16)",
+            marginBottom: "18px",
         },
         tabsRow: {
             display: "flex",
             gap: "12px",
-            marginBottom: "20px",
             flexWrap: "wrap",
         },
         button: {
-            padding: "10px 14px",
-            borderRadius: "10px",
+            padding: "11px 16px",
+            borderRadius: "12px",
             border: "none",
-            background: "#7c3aed",
+            background: "linear-gradient(90deg, #7c3aed 0%, #9333ea 100%)",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 800,
             cursor: "pointer",
+            boxShadow: "0 10px 20px rgba(124,58,237,0.22)",
         },
         logoutBtn: {
-            padding: "10px 14px",
-            borderRadius: "10px",
+            padding: "11px 16px",
+            borderRadius: "12px",
             border: "none",
-            background: "#dc2626",
+            background: "linear-gradient(90deg, #dc2626 0%, #ef4444 100%)",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 800,
             cursor: "pointer",
+            boxShadow: "0 10px 20px rgba(220,38,38,0.22)",
         },
         tabBtn: {
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "#1f2937",
+            padding: "10px 16px",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.10)",
+            background: "#172033",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 800,
             cursor: "pointer",
         },
         tabBtnActive: {
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "#7c3aed",
+            padding: "10px 16px",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.10)",
+            background: "linear-gradient(90deg, #7c3aed 0%, #8b5cf6 100%)",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 800,
             cursor: "pointer",
+            boxShadow: "0 8px 18px rgba(124,58,237,0.25)",
         },
         filterBtn: {
             padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "#1f2937",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.10)",
+            background: "#182235",
             color: "#fff",
             fontWeight: 700,
             cursor: "pointer",
         },
         filterBtnActive: {
             padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid rgba(255,255,255,0.12)",
-            background: "#2563eb",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.10)",
+            background: "linear-gradient(90deg, #2563eb 0%, #3b82f6 100%)",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 800,
             cursor: "pointer",
+            boxShadow: "0 8px 18px rgba(37,99,235,0.24)",
         },
         toggleBtn: {
             padding: "8px 12px",
             borderRadius: "10px",
-            border: "1px solid rgba(255,255,255,0.12)",
+            border: "1px solid rgba(255,255,255,0.10)",
             background: "#1e293b",
             color: "#fff",
             fontWeight: 700,
@@ -522,55 +543,55 @@ export default function AdminPage() {
             minWidth: "88px",
         },
         syncBtn: {
-            padding: "10px 14px",
-            borderRadius: "10px",
+            padding: "11px 14px",
+            borderRadius: "12px",
             border: "none",
             background: "#0ea5e9",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 800,
             cursor: "pointer",
         },
         completeBtn: {
-            padding: "10px 14px",
-            borderRadius: "10px",
+            padding: "11px 14px",
+            borderRadius: "12px",
             border: "none",
             background: "#16a34a",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 800,
             cursor: "pointer",
         },
         closeBtn: {
-            padding: "10px 14px",
-            borderRadius: "10px",
+            padding: "11px 14px",
+            borderRadius: "12px",
             border: "none",
             background: "#64748b",
             color: "#fff",
-            fontWeight: 700,
+            fontWeight: 800,
             cursor: "pointer",
         },
         saveBtn: {
-            padding: "10px 14px",
-            borderRadius: "10px",
+            padding: "11px 14px",
+            borderRadius: "12px",
             border: "none",
             background: "#f59e0b",
             color: "#111827",
-            fontWeight: 700,
+            fontWeight: 900,
             cursor: "pointer",
         },
         searchInput: {
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid rgba(255,255,255,0.12)",
+            padding: "12px 14px",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.10)",
             background: "#0b1220",
             color: "#fff",
-            minWidth: "280px",
+            minWidth: "320px",
             outline: "none",
             fontSize: "14px",
         },
         select: {
-            padding: "10px 14px",
-            borderRadius: "10px",
-            border: "1px solid rgba(255,255,255,0.12)",
+            padding: "12px 14px",
+            borderRadius: "12px",
+            border: "1px solid rgba(255,255,255,0.10)",
             background: "#0b1220",
             color: "#fff",
             outline: "none",
@@ -579,136 +600,180 @@ export default function AdminPage() {
         info: {
             marginBottom: "16px",
             color: "#93c5fd",
+            fontSize: "15px",
         },
         error: {
             marginBottom: "16px",
             color: "#fca5a5",
-            fontWeight: 700,
+            fontWeight: 800,
+            fontSize: "15px",
         },
         grid: {
             display: "grid",
-            gap: "16px",
+            gap: "18px",
         },
         card: {
             border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "16px",
-            padding: "18px",
-            background: "#111827",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            borderRadius: "22px",
+            padding: "0",
+            background: "linear-gradient(180deg, rgba(17,24,39,0.96) 0%, rgba(10,18,34,0.98) 100%)",
+            boxShadow: "0 16px 40px rgba(0,0,0,0.22)",
+            overflow: "hidden",
         },
-        topRow: {
+        cardTop: {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-start",
-            gap: "14px",
+            gap: "18px",
             flexWrap: "wrap",
-            marginBottom: "12px",
+            padding: "20px 22px 16px",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            background: "linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.00) 100%)",
+        },
+        cardBody: {
+            padding: "18px 22px 20px",
+        },
+        cardDetails: {
+            marginTop: "16px",
+            padding: "16px",
+            borderRadius: "16px",
+            background: "rgba(8, 15, 28, 0.78)",
+            border: "1px solid rgba(255,255,255,0.06)",
         },
         id: {
-            fontSize: "22px",
+            fontSize: "24px",
             fontWeight: 900,
             color: "#fde68a",
-            marginBottom: "6px",
+            marginBottom: "4px",
+            letterSpacing: "-0.02em",
         },
         subId: {
             color: "#93c5fd",
             fontSize: "13px",
-            fontWeight: 700,
-            marginBottom: "6px",
+            fontWeight: 800,
+            marginBottom: "8px",
         },
         email: {
             color: "#cbd5e1",
             fontSize: "14px",
         },
+        queueBadge: {
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            marginBottom: "10px",
+            padding: "7px 12px",
+            borderRadius: "999px",
+            background: "linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%)",
+            color: "#111827",
+            fontSize: "12px",
+            fontWeight: 900,
+            boxShadow: "0 10px 18px rgba(245,158,11,0.20)",
+        },
         statusWrap: {
             display: "flex",
             gap: "8px",
             flexWrap: "wrap",
+            alignItems: "center",
         },
         badgePending: {
             background: "#78350f",
             color: "#fde68a",
-            padding: "6px 10px",
+            padding: "7px 11px",
             borderRadius: "999px",
             fontSize: "12px",
-            fontWeight: 800,
+            fontWeight: 900,
         },
         badgePaid: {
             background: "#14532d",
             color: "#bbf7d0",
-            padding: "6px 10px",
+            padding: "7px 11px",
             borderRadius: "999px",
             fontSize: "12px",
-            fontWeight: 800,
+            fontWeight: 900,
         },
         badgeDone: {
             background: "#1d4ed8",
             color: "#dbeafe",
-            padding: "6px 10px",
+            padding: "7px 11px",
             borderRadius: "999px",
             fontSize: "12px",
-            fontWeight: 800,
+            fontWeight: 900,
         },
         badgeClosed: {
             background: "#475569",
             color: "#e2e8f0",
-            padding: "6px 10px",
+            padding: "7px 11px",
             borderRadius: "999px",
             fontSize: "12px",
-            fontWeight: 800,
+            fontWeight: 900,
         },
         badgeOther: {
             background: "#374151",
             color: "#e5e7eb",
-            padding: "6px 10px",
+            padding: "7px 11px",
             borderRadius: "999px",
             fontSize: "12px",
-            fontWeight: 800,
+            fontWeight: 900,
         },
-        rows: {
+        summaryGrid: {
             display: "grid",
-            gap: "8px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: "12px",
         },
-        row: {
-            display: "grid",
-            gridTemplateColumns: "180px 1fr",
-            gap: "10px",
-            alignItems: "start",
+        miniCard: {
+            padding: "14px 14px",
+            borderRadius: "14px",
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.06)",
         },
-        label: {
+        miniLabel: {
             color: "#93c5fd",
             fontWeight: 700,
-            fontSize: "14px",
+            fontSize: "12px",
+            marginBottom: "6px",
+            textTransform: "uppercase",
+            letterSpacing: "0.03em",
         },
-        value: {
+        miniValue: {
             color: "#f8fafc",
-            fontSize: "14px",
+            fontSize: "15px",
+            lineHeight: 1.45,
             wordBreak: "break-word",
             whiteSpace: "pre-wrap",
         },
         empty: {
-            color: "#cbd5e1",
+            color: "#94a3b8",
             fontStyle: "italic",
         },
         actions: {
-            marginTop: "14px",
+            marginTop: "16px",
             display: "flex",
             gap: "10px",
             flexWrap: "wrap",
         },
         notesBox: {
-            marginTop: "14px",
+            marginTop: "16px",
+            padding: "16px",
+            borderRadius: "16px",
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.06)",
             display: "grid",
             gap: "10px",
         },
+        notesHeader: {
+            color: "#c4b5fd",
+            fontWeight: 800,
+            fontSize: "14px",
+        },
         textarea: {
             width: "100%",
-            minHeight: "90px",
-            borderRadius: "12px",
-            border: "1px solid rgba(255,255,255,0.12)",
+            minHeight: "120px",
+            borderRadius: "14px",
+            border: "1px solid rgba(255,255,255,0.10)",
             background: "#0b1220",
             color: "#f8fafc",
-            padding: "12px",
+            padding: "14px",
             fontSize: "14px",
             boxSizing: "border-box",
             resize: "vertical",
@@ -721,18 +786,21 @@ export default function AdminPage() {
         },
         statCard: {
             border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "16px",
+            borderRadius: "18px",
             padding: "18px",
-            background: "#111827",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            background: "linear-gradient(180deg, rgba(17,24,39,0.96) 0%, rgba(12,19,33,0.98) 100%)",
+            boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
         },
         statLabel: {
             color: "#93c5fd",
-            fontSize: "14px",
-            marginBottom: "8px",
+            fontSize: "13px",
+            marginBottom: "10px",
+            textTransform: "uppercase",
+            letterSpacing: "0.04em",
+            fontWeight: 700,
         },
         statValue: {
-            fontSize: "28px",
+            fontSize: "30px",
             fontWeight: 900,
             color: "#fde68a",
         },
@@ -742,10 +810,10 @@ export default function AdminPage() {
         },
         chartCard: {
             border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "16px",
+            borderRadius: "18px",
             padding: "18px",
-            background: "#111827",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            background: "linear-gradient(180deg, rgba(17,24,39,0.96) 0%, rgba(12,19,33,0.98) 100%)",
+            boxShadow: "0 12px 28px rgba(0,0,0,0.18)",
         },
         chartTitle: {
             fontSize: "20px",
@@ -772,7 +840,7 @@ export default function AdminPage() {
         barFill: {
             height: "100%",
             borderRadius: "999px",
-            background: "#7c3aed",
+            background: "linear-gradient(90deg, #7c3aed 0%, #3b82f6 100%)",
         },
         smallValue: {
             textAlign: "right",
@@ -806,7 +874,7 @@ export default function AdminPage() {
             return <span style={styles.badgeClosed}>ZAMKNIĘTE</span>;
         }
 
-        return <span style={styles.badgeOther}>{status || "nowe"}</span>;
+        return <span style={styles.badgeOther}>{status || "NOWE"}</span>;
     };
 
     const filterButtons = [
@@ -821,80 +889,86 @@ export default function AdminPage() {
     return (
         <div style={styles.page}>
             <div style={styles.wrap}>
-                <div style={styles.title}>Panel admina</div>
-                <div style={styles.subtitle}>
-                    Zamówienia, pytania, notatki, statusy płatności i statystyki.
+                <div style={styles.hero}>
+                    <div style={styles.title}>Panel admina</div>
+                    <div style={styles.subtitle}>
+                        Zarządzanie zamówieniami, kolejką, płatnościami i notatkami roboczymi.
+                    </div>
                 </div>
 
-                <div style={styles.toolbar}>
-                    <button style={styles.button} onClick={loadOrders}>
-                        Odśwież zamówienia
-                    </button>
+                <div style={styles.sectionCard}>
+                    <div style={styles.toolbar}>
+                        <button style={styles.button} onClick={loadOrders}>
+                            Odśwież zamówienia
+                        </button>
 
-                    <button style={styles.button} onClick={loadStats}>
-                        Odśwież statystyki
-                    </button>
+                        <button style={styles.button} onClick={loadStats}>
+                            Odśwież statystyki
+                        </button>
 
-                    <button style={styles.logoutBtn} onClick={handleLogout}>
-                        Wyloguj
-                    </button>
-                </div>
+                        <button style={styles.logoutBtn} onClick={handleLogout}>
+                            Wyloguj
+                        </button>
+                    </div>
 
-                <div style={styles.tabsRow}>
-                    <button
-                        style={activeTab === "orders" ? styles.tabBtnActive : styles.tabBtn}
-                        onClick={() => setActiveTab("orders")}
-                    >
-                        Zamówienia
-                    </button>
+                    <div style={styles.tabsRow}>
+                        <button
+                            style={activeTab === "orders" ? styles.tabBtnActive : styles.tabBtn}
+                            onClick={() => setActiveTab("orders")}
+                        >
+                            Zamówienia
+                        </button>
 
-                    <button
-                        style={activeTab === "stats" ? styles.tabBtnActive : styles.tabBtn}
-                        onClick={() => setActiveTab("stats")}
-                    >
-                        Statystyki
-                    </button>
+                        <button
+                            style={activeTab === "stats" ? styles.tabBtnActive : styles.tabBtn}
+                            onClick={() => setActiveTab("stats")}
+                        >
+                            Statystyki
+                        </button>
+                    </div>
                 </div>
 
                 {activeTab === "orders" && (
                     <>
-                        <div style={styles.toolbar}>
-                            {filterButtons.map((item) => (
-                                <button
-                                    key={item.key}
-                                    style={filter === item.key ? styles.filterBtnActive : styles.filterBtn}
-                                    onClick={() => setFilter(item.key)}
+                        <div style={styles.sectionCard}>
+                            <div style={styles.toolbar}>
+                                {filterButtons.map((item) => (
+                                    <button
+                                        key={item.key}
+                                        style={filter === item.key ? styles.filterBtnActive : styles.filterBtn}
+                                        onClick={() => setFilter(item.key)}
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div style={styles.toolbar}>
+                                <input
+                                    style={styles.searchInput}
+                                    type="text"
+                                    placeholder="Szukaj po imieniu, mailu, numerze, pytaniu..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+
+                                <select
+                                    style={styles.select}
+                                    value={sortMode}
+                                    onChange={(e) => setSortMode(e.target.value)}
                                 >
-                                    {item.label}
-                                </button>
-                            ))}
+                                    <option value="newest">Najnowsze</option>
+                                    <option value="oldest">Najstarsze</option>
+                                </select>
+                            </div>
+
+                            <div style={styles.info}>
+                                Zamówienia w tym widoku: <b>{visibleOrders.length}</b> • Wszystkie w systemie: {orders.length}
+                            </div>
+
+                            {error && <div style={styles.error}>{error}</div>}
+                            {loading && <div style={styles.info}>Ładowanie danych...</div>}
                         </div>
-
-                        <div style={styles.toolbar}>
-                            <input
-                                style={styles.searchInput}
-                                type="text"
-                                placeholder="Szukaj po imieniu, mailu, numerze, pytaniu..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-
-                            <select
-                                style={styles.select}
-                                value={sortMode}
-                                onChange={(e) => setSortMode(e.target.value)}
-                            >
-                                <option value="newest">Najnowsze</option>
-                                <option value="oldest">Najstarsze</option>
-                            </select>
-                        </div>
-
-                        <div style={styles.info}>
-                            Zamówienia w tym widoku: <b>{visibleOrders.length}</b> • Wszystkie w systemie: {orders.length}
-                        </div>
-
-                        {error && <div style={styles.error}>{error}</div>}
-                        {loading && <div style={styles.info}>Ładowanie danych...</div>}
 
                         <div style={styles.grid}>
                             {visibleOrders.map((order, index) => {
@@ -921,16 +995,16 @@ export default function AdminPage() {
 
                                 return (
                                     <div key={order.id} style={styles.card}>
-                                        <div style={styles.topRow}>
+                                        <div style={styles.cardTop}>
                                             <div>
                                                 {queuePosition !== null && (
-                                                    <div style={styles.subId}>Pozycja w kolejce: {queuePosition}</div>
+                                                    <div style={styles.queueBadge}>
+                                                        <span>●</span>
+                                                        <span>Pozycja w kolejce: {queuePosition}</span>
+                                                    </div>
                                                 )}
 
-                                                <div style={styles.id}>
-                                                    {order.customer_name}
-                                                </div>
-
+                                                <div style={styles.id}>{order.customer_name}</div>
                                                 <div style={styles.subId}>Zamówienie #{order.id}</div>
                                                 <div style={styles.email}>{order.customer_email}</div>
                                             </div>
@@ -948,161 +1022,167 @@ export default function AdminPage() {
                                             </div>
                                         </div>
 
-                                        <div style={styles.rows}>
-                                            <div style={styles.row}>
-                                                <div style={styles.label}>Pakiet</div>
-                                                <div style={styles.value}>{order.package_name || "-"}</div>
-                                            </div>
+                                        <div style={styles.cardBody}>
+                                            <div style={styles.summaryGrid}>
+                                                <div style={styles.miniCard}>
+                                                    <div style={styles.miniLabel}>Pakiet</div>
+                                                    <div style={styles.miniValue}>{order.package_name || "-"}</div>
+                                                </div>
 
-                                            <div style={styles.row}>
-                                                <div style={styles.label}>Pytanie</div>
-                                                <div style={styles.value}>{shortenText(order.question)}</div>
-                                            </div>
+                                                <div style={styles.miniCard}>
+                                                    <div style={styles.miniLabel}>Pytanie</div>
+                                                    <div style={styles.miniValue}>{shortenText(order.question)}</div>
+                                                </div>
 
-                                            <div style={styles.row}>
-                                                <div style={styles.label}>Data utworzenia</div>
-                                                <div style={styles.value}>{formatDateTime(order.created_at)}</div>
-                                            </div>
+                                                <div style={styles.miniCard}>
+                                                    <div style={styles.miniLabel}>Data utworzenia</div>
+                                                    <div style={styles.miniValue}>{formatDateTime(order.created_at)}</div>
+                                                </div>
 
-                                            <div style={styles.row}>
-                                                <div style={styles.label}>Data opłacenia</div>
-                                                <div style={styles.value}>
-                                                    {order.paid_at ? formatDateTime(order.paid_at) : "-"}
+                                                <div style={styles.miniCard}>
+                                                    <div style={styles.miniLabel}>Data opłacenia</div>
+                                                    <div style={styles.miniValue}>
+                                                        {order.paid_at ? formatDateTime(order.paid_at) : "-"}
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        {isExpanded && (
-                                            <>
-                                                <div style={styles.rows}>
-                                                    <div style={styles.row}>
-                                                        <div style={styles.label}>Kwota</div>
-                                                        <div style={styles.value}>{order.amount || "-"}</div>
-                                                    </div>
+                                            {isExpanded && (
+                                                <>
+                                                    <div style={styles.cardDetails}>
+                                                        <div style={styles.summaryGrid}>
+                                                            <div style={styles.miniCard}>
+                                                                <div style={styles.miniLabel}>Kwota</div>
+                                                                <div style={styles.miniValue}>{order.amount || "-"}</div>
+                                                            </div>
 
-                                                    <div style={styles.row}>
-                                                        <div style={styles.label}>Pełne pytanie</div>
-                                                        <div style={styles.value}>
-                                                            {order.question ? (
-                                                                order.question
-                                                            ) : (
-                                                                <span style={styles.empty}>Brak pytania</span>
-                                                            )}
+                                                            <div style={styles.miniCard}>
+                                                                <div style={styles.miniLabel}>Data aktualizacji</div>
+                                                                <div style={styles.miniValue}>{formatDateTime(order.updated_at)}</div>
+                                                            </div>
+
+                                                            <div style={styles.miniCard}>
+                                                                <div style={styles.miniLabel}>ID transakcji Tpay</div>
+                                                                <div style={styles.miniValue}>
+                                                                    {order.tpay_transaction_id ? (
+                                                                        order.tpay_transaction_id
+                                                                    ) : (
+                                                                        <span style={styles.empty}>Brak</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <div style={styles.miniCard}>
+                                                                <div style={styles.miniLabel}>Link płatności</div>
+                                                                <div style={styles.miniValue}>
+                                                                    {order.tpay_payment_url ? (
+                                                                        <a
+                                                                            href={order.tpay_payment_url}
+                                                                            target="_blank"
+                                                                            rel="noreferrer"
+                                                                            style={{ color: "#93c5fd" }}
+                                                                        >
+                                                                            Otwórz link płatności
+                                                                        </a>
+                                                                    ) : (
+                                                                        <span style={styles.empty}>Brak</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            <div style={{ ...styles.miniCard, gridColumn: "1 / -1" }}>
+                                                                <div style={styles.miniLabel}>Pełne pytanie</div>
+                                                                <div style={styles.miniValue}>
+                                                                    {order.question ? (
+                                                                        order.question
+                                                                    ) : (
+                                                                        <span style={styles.empty}>Brak pytania</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
 
-                                                    <div style={styles.row}>
-                                                        <div style={styles.label}>Data aktualizacji</div>
-                                                        <div style={styles.value}>{formatDateTime(order.updated_at)}</div>
-                                                    </div>
+                                                    <div style={styles.notesBox}>
+                                                        <div style={styles.notesHeader}>Notatki wróżki</div>
+                                                        <textarea
+                                                            style={styles.textarea}
+                                                            value={notesDrafts[order.id] ?? ""}
+                                                            onChange={(e) => handleNotesChange(order.id, e.target.value)}
+                                                            placeholder="Wpisz notatkę wewnętrzną..."
+                                                        />
 
-                                                    <div style={styles.row}>
-                                                        <div style={styles.label}>ID transakcji Tpay</div>
-                                                        <div style={styles.value}>
-                                                            {order.tpay_transaction_id ? (
-                                                                order.tpay_transaction_id
-                                                            ) : (
-                                                                <span style={styles.empty}>Brak</span>
-                                                            )}
-                                                        </div>
-                                                    </div>
-
-                                                    <div style={styles.row}>
-                                                        <div style={styles.label}>Link płatności</div>
-                                                        <div style={styles.value}>
-                                                            {order.tpay_payment_url ? (
-                                                                <a
-                                                                    href={order.tpay_payment_url}
-                                                                    target="_blank"
-                                                                    rel="noreferrer"
-                                                                    style={{ color: "#93c5fd" }}
+                                                        <div style={styles.actions}>
+                                                            {canSyncPayment && (
+                                                                <button
+                                                                    style={{
+                                                                        ...styles.syncBtn,
+                                                                        opacity: syncingOrderId === order.id ? 0.7 : 1,
+                                                                    }}
+                                                                    onClick={() => syncOrderPayment(order.id)}
+                                                                    disabled={syncingOrderId === order.id}
                                                                 >
-                                                                    Otwórz link płatności
-                                                                </a>
-                                                            ) : (
-                                                                <span style={styles.empty}>Brak</span>
+                                                                    {syncingOrderId === order.id
+                                                                        ? "Synchronizacja..."
+                                                                        : "Aktualizuj status"}
+                                                                </button>
                                                             )}
+
+                                                            {canComplete && (
+                                                                <button
+                                                                    style={{
+                                                                        ...styles.completeBtn,
+                                                                        opacity: completingOrderId === order.id ? 0.7 : 1,
+                                                                    }}
+                                                                    onClick={() => completeOrder(order.id)}
+                                                                    disabled={completingOrderId === order.id}
+                                                                >
+                                                                    {completingOrderId === order.id
+                                                                        ? "Zapisywanie..."
+                                                                        : "Oznacz jako zrealizowane"}
+                                                                </button>
+                                                            )}
+
+                                                            {canClose && (
+                                                                <button
+                                                                    style={{
+                                                                        ...styles.closeBtn,
+                                                                        opacity: closingOrderId === order.id ? 0.7 : 1,
+                                                                    }}
+                                                                    onClick={() => closeOrder(order.id)}
+                                                                    disabled={closingOrderId === order.id}
+                                                                >
+                                                                    {closingOrderId === order.id
+                                                                        ? "Zamykanie..."
+                                                                        : "Zamknij jako nieopłacone"}
+                                                                </button>
+                                                            )}
+
+                                                            <button
+                                                                style={{
+                                                                    ...styles.saveBtn,
+                                                                    opacity: savingNotesOrderId === order.id ? 0.7 : 1,
+                                                                }}
+                                                                onClick={() => saveNotes(order.id)}
+                                                                disabled={savingNotesOrderId === order.id}
+                                                            >
+                                                                {savingNotesOrderId === order.id
+                                                                    ? "Zapisywanie..."
+                                                                    : "Zapisz notatkę"}
+                                                            </button>
                                                         </div>
                                                     </div>
-                                                </div>
-
-                                                <div style={styles.notesBox}>
-                                                    <div style={styles.label}>Notatki wróżki</div>
-                                                    <textarea
-                                                        style={styles.textarea}
-                                                        value={notesDrafts[order.id] ?? ""}
-                                                        onChange={(e) => handleNotesChange(order.id, e.target.value)}
-                                                        placeholder="Wpisz notatkę wewnętrzną..."
-                                                    />
-                                                </div>
-
-                                                <div style={styles.actions}>
-                                                    {canSyncPayment && (
-                                                        <button
-                                                            style={{
-                                                                ...styles.syncBtn,
-                                                                opacity: syncingOrderId === order.id ? 0.7 : 1,
-                                                            }}
-                                                            onClick={() => syncOrderPayment(order.id)}
-                                                            disabled={syncingOrderId === order.id}
-                                                        >
-                                                            {syncingOrderId === order.id
-                                                                ? "Synchronizacja..."
-                                                                : "Aktualizuj status"}
-                                                        </button>
-                                                    )}
-
-                                                    {canComplete && (
-                                                        <button
-                                                            style={{
-                                                                ...styles.completeBtn,
-                                                                opacity: completingOrderId === order.id ? 0.7 : 1,
-                                                            }}
-                                                            onClick={() => completeOrder(order.id)}
-                                                            disabled={completingOrderId === order.id}
-                                                        >
-                                                            {completingOrderId === order.id
-                                                                ? "Zapisywanie..."
-                                                                : "Oznacz jako zrealizowane"}
-                                                        </button>
-                                                    )}
-
-                                                    {canClose && (
-                                                        <button
-                                                            style={{
-                                                                ...styles.closeBtn,
-                                                                opacity: closingOrderId === order.id ? 0.7 : 1,
-                                                            }}
-                                                            onClick={() => closeOrder(order.id)}
-                                                            disabled={closingOrderId === order.id}
-                                                        >
-                                                            {closingOrderId === order.id
-                                                                ? "Zamykanie..."
-                                                                : "Zamknij jako nieopłacone"}
-                                                        </button>
-                                                    )}
-
-                                                    <button
-                                                        style={{
-                                                            ...styles.saveBtn,
-                                                            opacity: savingNotesOrderId === order.id ? 0.7 : 1,
-                                                        }}
-                                                        onClick={() => saveNotes(order.id)}
-                                                        disabled={savingNotesOrderId === order.id}
-                                                    >
-                                                        {savingNotesOrderId === order.id
-                                                            ? "Zapisywanie..."
-                                                            : "Zapisz notatkę"}
-                                                    </button>
-                                                </div>
-                                            </>
-                                        )}
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })}
 
                             {!loading && visibleOrders.length === 0 && (
-                                <div style={styles.card}>Brak zamówień dla wybranego filtra lub wyszukiwania.</div>
+                                <div style={styles.sectionCard}>
+                                    Brak zamówień dla wybranego filtra lub wyszukiwania.
+                                </div>
                             )}
                         </div>
                     </>
