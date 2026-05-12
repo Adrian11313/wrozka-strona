@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import App from "./App.jsx";
 import AdminPage from "./AdminPage.jsx";
 import AdminLoginPage from "./AdminLoginPage.jsx";
+import LiveQueuePage from "./LiveQueuePage.jsx";
 import "./index.css";
 import "./App.css";
 
@@ -14,6 +15,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Route path="/" element={<App />} />
         <Route path="/admin-login" element={<AdminLoginPage />} />
         <Route path="/admin" element={<AdminPage />} />
+        <Route path="/live-queue" element={<LiveQueuePage />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
