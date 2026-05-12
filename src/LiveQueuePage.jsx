@@ -1,90 +1,44 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:5000";
 
-export default function LiveQueuePage() {
-  const navigate = useNavigate();
-
+export default function LiveQueueOverlayPage() {
   const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [lastUpdate, setLastUpdate] = useState("");
 
-  const checkAuth = async () => {
-    try {
-      const response = await fetch(`${API_BASE}/api/admin/check-auth`, {
-        credentials: "include",
-      });
-
-      const data = await response.json();
-
-      if (!data.authenticated) {
-        navigate("/admin-login");
-        return false;
-      }
-
-      return true;
-    } catch {
-      navigate("/admin-login");
-      return false;
-    }
-  };
-
-  const parseOrderDate = (value) => {
-    if (!value) return null;
-
-    const normalized = String(value).replace(" ", "T");
-    const candidate = normalized.endsWith("Z") ? normalized : `${normalized}Z`;
-    const date = new Date(candidate);
-
-    if (Number.isNaN(date.getTime())) {
-      return null;
-    }
-
-    return date;
-  };
-
-  const loadOrders = async () => {
+  const loadQueue = async () => {
     try {
       setError("");
 
-      const response = await fetch(`${API_BASE}/api/admin/orders`, {
-        credentials: "include",
-      });
+      const response = await fetch(`${API_BASE}/api/live-queue`);
       const data = await response.json();
-
-      if (response.status === 401) {
-        navigate("/admin-login");
-        return;
-      }
 
       if (!response.ok) {
         throw new Error(data.error || "Nie udało się pobrać kolejki.");
       }
 
-      setOrders(data.orders || []);
+      setOrders(data.queue || []);
+      setLastUpdate(
+        new Intl.DateTimeFormat("pl-PL", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(new Date())
+      );
     } catch (err) {
       setError(err.message || "Błąd pobierania kolejki.");
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
     let intervalId;
 
-    const init = async () => {
-      const ok = await checkAuth();
-      if (!ok) return;
+    loadQueue();
 
-      await loadOrders();
-
-      intervalId = setInterval(() => {
-        loadOrders();
-      }, 10000);
-    };
-
-    init();
+    intervalId = setInterval(() => {
+      loadQueue();
+    }, 10000);
 
     return () => {
       if (intervalId) {
@@ -93,223 +47,270 @@ export default function LiveQueuePage() {
     };
   }, []);
 
-  const queueOrders = useMemo(() => {
-    const result = orders.filter((order) => {
-      const paymentStatus = (order.payment_status || "").toLowerCase();
-      const orderStatus = (order.order_status || "").toLowerCase();
-
-      return (
-        paymentStatus === "oplacone" &&
-        orderStatus !== "zrealizowane" &&
-        orderStatus !== "zamkniete"
-      );
-    });
-
-    result.sort((a, b) => {
-      const aPaid =
-        parseOrderDate(a.paid_at)?.getTime() ??
-        parseOrderDate(a.created_at)?.getTime() ??
-        0;
-      const bPaid =
-        parseOrderDate(b.paid_at)?.getTime() ??
-        parseOrderDate(b.created_at)?.getTime() ??
-        0;
-      return aPaid - bPaid;
-    });
-
-    return result;
-  }, [orders]);
+  const visibleOrders = useMemo(() => orders.slice(0, 5), [orders]);
+  const nextOrder = visibleOrders[0];
 
   const maskName = (name) => {
     const text = String(name || "").trim();
-    if (!text) return "Klient";
+
+    if (!text) {
+      return "Klient";
+    }
 
     const parts = text.split(/\s+/);
-    if (parts.length === 1) return parts[0];
 
-    const first = parts[0];
-    const second = parts[1];
-    return `${first} ${second[0]}.`;
+    if (parts.length === 1) {
+      return parts[0];
+    }
+
+    return `${parts[0]} ${parts[1][0]}.`;
   };
 
   const styles = {
     page: {
-      minHeight: "100vh",
-      background: "linear-gradient(180deg, #14051f 0%, #1f0a2e 100%)",
-      color: "#fff7ed",
-      fontFamily: "Arial, sans-serif",
-      padding: "24px",
+      width: "100%",
+      height: "100vh",
+      background: "transparent",
+      margin: 0,
+      padding: "54px 42px",
       boxSizing: "border-box",
+      fontFamily:
+        "Inter, Arial, system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+      color: "#ffffff",
+      overflow: "hidden",
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "flex-start",
     },
-    wrap: {
-      maxWidth: "900px",
-      margin: "0 auto",
+    overlay: {
+      width: "100%",
+      maxWidth: "620px",
+      display: "grid",
+      gap: "22px",
     },
-    hero: {
-      borderRadius: "28px",
-      padding: "28px",
-      background:
-        "linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(168,85,247,0.18) 50%, rgba(236,72,153,0.16) 100%)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
-      marginBottom: "22px",
+    topBadge: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "10px",
+      width: "fit-content",
+      padding: "10px 16px",
+      borderRadius: "999px",
+      background: "rgba(0,0,0,0.28)",
+      border: "1px solid rgba(255,255,255,0.18)",
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
+      boxShadow: "0 12px 34px rgba(0,0,0,0.28)",
+    },
+    liveDot: {
+      width: "10px",
+      height: "10px",
+      borderRadius: "999px",
+      background: "#fb7185",
+      boxShadow: "0 0 18px rgba(251,113,133,0.95)",
+    },
+    topBadgeText: {
+      fontSize: "17px",
+      fontWeight: 900,
+      letterSpacing: "0.04em",
+      textTransform: "uppercase",
+      color: "#ffffff",
+      textShadow: "0 4px 14px rgba(0,0,0,0.75)",
+    },
+    titleBox: {
+      display: "grid",
+      gap: "8px",
     },
     title: {
-      fontSize: "42px",
-      fontWeight: 900,
-      marginBottom: "8px",
+      fontSize: "64px",
+      lineHeight: 0.95,
+      fontWeight: 1000,
       color: "#fde68a",
+      letterSpacing: "-0.04em",
+      textShadow:
+        "0 4px 0 rgba(0,0,0,0.24), 0 10px 32px rgba(0,0,0,0.85)",
     },
     subtitle: {
-      fontSize: "18px",
+      fontSize: "24px",
+      lineHeight: 1.22,
+      fontWeight: 800,
       color: "#f5d0fe",
-      lineHeight: 1.5,
+      textShadow: "0 6px 22px rgba(0,0,0,0.85)",
     },
-    infoBar: {
+    metaRow: {
       display: "flex",
-      justifyContent: "space-between",
-      gap: "12px",
+      gap: "10px",
       flexWrap: "wrap",
-      marginBottom: "18px",
-      fontSize: "16px",
-      color: "#e9d5ff",
+      alignItems: "center",
     },
-    nextCard: {
-      borderRadius: "28px",
-      padding: "28px",
-      background:
-        "linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 100%)",
-      border: "1px solid rgba(255,255,255,0.10)",
-      boxShadow: "0 18px 40px rgba(0,0,0,0.24)",
-      marginBottom: "20px",
+    metaPill: {
+      width: "fit-content",
+      padding: "8px 13px",
+      borderRadius: "999px",
+      background: "rgba(0,0,0,0.28)",
+      border: "1px solid rgba(255,255,255,0.14)",
+      backdropFilter: "blur(10px)",
+      WebkitBackdropFilter: "blur(10px)",
+      color: "#ffffff",
+      fontSize: "15px",
+      fontWeight: 800,
+      textShadow: "0 4px 14px rgba(0,0,0,0.7)",
+    },
+    nextBox: {
+      display: "grid",
+      gap: "8px",
+      paddingTop: "8px",
     },
     nextLabel: {
-      fontSize: "14px",
+      fontSize: "18px",
+      fontWeight: 1000,
+      letterSpacing: "0.09em",
       textTransform: "uppercase",
-      letterSpacing: "0.08em",
       color: "#c4b5fd",
-      marginBottom: "12px",
-      fontWeight: 800,
+      textShadow: "0 5px 18px rgba(0,0,0,0.85)",
     },
     nextName: {
-      fontSize: "52px",
-      fontWeight: 900,
-      color: "#fde68a",
-      lineHeight: 1.05,
-      marginBottom: "12px",
+      fontSize: "76px",
+      lineHeight: 0.95,
+      fontWeight: 1000,
+      color: "#ffffff",
+      letterSpacing: "-0.04em",
+      textShadow:
+        "0 5px 0 rgba(0,0,0,0.22), 0 12px 36px rgba(0,0,0,0.88)",
     },
     nextPackage: {
-      fontSize: "24px",
-      color: "#f5d0fe",
-      fontWeight: 700,
+      width: "fit-content",
+      padding: "10px 16px",
+      borderRadius: "999px",
+      background:
+        "linear-gradient(90deg, rgba(245,158,11,0.92) 0%, rgba(251,191,36,0.92) 100%)",
+      color: "#241005",
+      fontSize: "20px",
+      lineHeight: 1.1,
+      fontWeight: 1000,
+      boxShadow: "0 12px 34px rgba(245,158,11,0.25)",
     },
-    queueList: {
+    list: {
       display: "grid",
+      gap: "13px",
+      marginTop: "4px",
+    },
+    row: {
+      display: "grid",
+      gridTemplateColumns: "62px 1fr",
       gap: "14px",
-    },
-    queueItem: {
-      display: "grid",
-      gridTemplateColumns: "80px 1fr",
-      gap: "16px",
       alignItems: "center",
-      borderRadius: "22px",
-      padding: "18px 20px",
-      background: "rgba(255,255,255,0.05)",
-      border: "1px solid rgba(255,255,255,0.08)",
+      minHeight: "72px",
     },
-    queueIndex: {
-      width: "64px",
-      height: "64px",
+    index: {
+      width: "62px",
+      height: "62px",
       borderRadius: "999px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)",
-      color: "#1f2937",
-      fontWeight: 900,
-      fontSize: "24px",
-      boxShadow: "0 10px 20px rgba(245,158,11,0.22)",
+      fontSize: "30px",
+      fontWeight: 1000,
+      color: "#16051f",
+      background:
+        "linear-gradient(135deg, #fde68a 0%, #f59e0b 55%, #fb7185 100%)",
+      boxShadow:
+        "0 5px 0 rgba(0,0,0,0.25), 0 12px 30px rgba(0,0,0,0.45)",
     },
-    queueName: {
-      fontSize: "28px",
-      fontWeight: 900,
+    rowText: {
+      display: "grid",
+      gap: "3px",
+    },
+    rowName: {
+      fontSize: "34px",
+      lineHeight: 1,
+      fontWeight: 1000,
       color: "#fff7ed",
-      marginBottom: "4px",
+      letterSpacing: "-0.025em",
+      textShadow: "0 6px 22px rgba(0,0,0,0.86)",
     },
-    queuePackage: {
-      fontSize: "16px",
-      color: "#e9d5ff",
+    rowPackage: {
+      fontSize: "17px",
+      lineHeight: 1.2,
+      fontWeight: 800,
+      color: "#f5d0fe",
+      textShadow: "0 5px 18px rgba(0,0,0,0.85)",
     },
     empty: {
-      borderRadius: "22px",
-      padding: "22px",
-      background: "rgba(255,255,255,0.05)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      fontSize: "22px",
+      marginTop: "16px",
+      fontSize: "36px",
+      lineHeight: 1.1,
+      fontWeight: 1000,
+      color: "#fde68a",
+      textShadow:
+        "0 5px 0 rgba(0,0,0,0.24), 0 12px 34px rgba(0,0,0,0.85)",
+    },
+    emptySub: {
+      marginTop: "8px",
+      fontSize: "20px",
+      fontWeight: 800,
       color: "#f5d0fe",
-      textAlign: "center",
+      textShadow: "0 6px 22px rgba(0,0,0,0.85)",
     },
     error: {
+      fontSize: "18px",
+      fontWeight: 900,
       color: "#fecaca",
-      fontWeight: 800,
-      marginBottom: "16px",
-      fontSize: "16px",
-    },
-    loading: {
-      textAlign: "center",
-      fontSize: "22px",
-      color: "#f5d0fe",
-      padding: "40px 20px",
+      textShadow: "0 5px 18px rgba(0,0,0,0.85)",
     },
   };
 
-  const nextOrder = queueOrders[0];
-  const nextItems = queueOrders.slice(0, 5);
-
   return (
     <div style={styles.page}>
-      <div style={styles.wrap}>
-        <div style={styles.hero}>
-          <div style={styles.title}>Aktualna kolejka</div>
-          <div style={styles.subtitle}>
-            Widok pod transmisję live — pokazuje kolejność opłaconych zgłoszeń.
+      <div style={styles.overlay}>
+        <div>
+          <div style={styles.topBadge}>
+            <span style={styles.liveDot} />
+            <span style={styles.topBadgeText}>Live queue</span>
           </div>
         </div>
 
-        <div style={styles.infoBar}>
-          <div>
-            Liczba osób w kolejce: <b>{queueOrders.length}</b>
+        <div style={styles.titleBox}>
+          <div style={styles.title}>Kolejka</div>
+          <div style={styles.subtitle}>Kto jest następny do wróżby?</div>
+
+          <div style={styles.metaRow}>
+            <div style={styles.metaPill}>Osób w kolejce: {orders.length}</div>
+            {lastUpdate && (
+              <div style={styles.metaPill}>Aktualizacja: {lastUpdate}</div>
+            )}
           </div>
-          <div>Odświeżanie automatyczne co 10 sekund</div>
         </div>
 
         {error && <div style={styles.error}>{error}</div>}
-        {loading && <div style={styles.loading}>Ładowanie kolejki...</div>}
 
-        {!loading && nextOrder && (
-          <div style={styles.nextCard}>
-            <div style={styles.nextLabel}>Następna osoba</div>
-            <div style={styles.nextName}>{maskName(nextOrder.customer_name)}</div>
-            <div style={styles.nextPackage}>{nextOrder.package_name || "-"}</div>
-          </div>
-        )}
+        {nextOrder ? (
+          <>
+            <div style={styles.nextBox}>
+              <div style={styles.nextLabel}>Następna osoba</div>
+              <div style={styles.nextName}>{maskName(nextOrder.customer_name)}</div>
+              <div style={styles.nextPackage}>{nextOrder.package_name || "-"}</div>
+            </div>
 
-        {!loading && nextItems.length > 0 && (
-          <div style={styles.queueList}>
-            {nextItems.map((order, index) => (
-              <div key={order.id} style={styles.queueItem}>
-                <div style={styles.queueIndex}>{index + 1}</div>
-                <div>
-                  <div style={styles.queueName}>{maskName(order.customer_name)}</div>
-                  <div style={styles.queuePackage}>{order.package_name || "-"}</div>
+            <div style={styles.list}>
+              {visibleOrders.map((order, index) => (
+                <div key={order.id} style={styles.row}>
+                  <div style={styles.index}>{index + 1}</div>
+
+                  <div style={styles.rowText}>
+                    <div style={styles.rowName}>{maskName(order.customer_name)}</div>
+                    <div style={styles.rowPackage}>{order.package_name || "-"}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+          </>
+        ) : (
+          <div>
+            <div style={styles.empty}>Brak osób w kolejce</div>
+            <div style={styles.emptySub}>
+              Zadaj pytanie i opłać usługę, aby wskoczyć na listę.
+            </div>
           </div>
-        )}
-
-        {!loading && nextItems.length === 0 && (
-          <div style={styles.empty}>Brak osób w kolejce.</div>
         )}
       </div>
     </div>
