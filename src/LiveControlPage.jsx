@@ -265,7 +265,7 @@ export default function LiveControlPage() {
   };
 
   const currentOrder = liveState?.order || null;
-  const nextOrder = queue[0] || null;
+  
 
   const styles = {
     page: {
