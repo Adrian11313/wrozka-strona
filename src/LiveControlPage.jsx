@@ -3,6 +3,40 @@ import { useNavigate } from "react-router-dom";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:5000";
 
+const DEFAULT_QUEUE_CONFIG = {
+  enabled: true,
+  title_text: "Kolejka",
+  subtitle_text: "Kto jest następny do wróżby?",
+  live_badge_text: "LIVE QUEUE",
+  show_live_badge: true,
+  show_title: true,
+  show_subtitle: true,
+  show_queue_count: true,
+  show_updated_at: true,
+  show_next_person: true,
+  show_package_name: true,
+  show_position_number: true,
+  max_visible_items: 2,
+  position_top: 40,
+  position_left: 32,
+  overlay_width: 340,
+  title_font_size: 42,
+  subtitle_font_size: 15,
+  next_label_font_size: 12,
+  next_name_font_size: 36,
+  item_name_font_size: 18,
+  item_package_font_size: 11,
+  badge_font_size: 10,
+  line_gap: 8,
+  background_opacity: 0,
+  text_shadow_enabled: true,
+  accent_color: "#f59e0b",
+  title_color: "#fde68a",
+  text_color: "#ffffff",
+  subtitle_color: "#f5d0fe",
+  compact_mode: true,
+};
+
 export default function LiveControlPage() {
   const navigate = useNavigate();
 
@@ -16,12 +50,79 @@ export default function LiveControlPage() {
     hotkey_read_again: "F11",
   });
 
+  const [queueConfig, setQueueConfig] = useState(DEFAULT_QUEUE_CONFIG);
   const [liveState, setLiveState] = useState(null);
   const [queue, setQueue] = useState([]);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [savingConfig, setSavingConfig] = useState(false);
+  const [savingQueueConfig, setSavingQueueConfig] = useState(false);
   const [busyAction, setBusyAction] = useState("");
+
+  const normalizeQueueConfig = (incomingConfig) => ({
+    ...DEFAULT_QUEUE_CONFIG,
+    ...(incomingConfig || {}),
+    enabled: Boolean(incomingConfig?.enabled ?? DEFAULT_QUEUE_CONFIG.enabled),
+    show_live_badge: Boolean(
+      incomingConfig?.show_live_badge ?? DEFAULT_QUEUE_CONFIG.show_live_badge
+    ),
+    show_title: Boolean(incomingConfig?.show_title ?? DEFAULT_QUEUE_CONFIG.show_title),
+    show_subtitle: Boolean(
+      incomingConfig?.show_subtitle ?? DEFAULT_QUEUE_CONFIG.show_subtitle
+    ),
+    show_queue_count: Boolean(
+      incomingConfig?.show_queue_count ?? DEFAULT_QUEUE_CONFIG.show_queue_count
+    ),
+    show_updated_at: Boolean(
+      incomingConfig?.show_updated_at ?? DEFAULT_QUEUE_CONFIG.show_updated_at
+    ),
+    show_next_person: Boolean(
+      incomingConfig?.show_next_person ?? DEFAULT_QUEUE_CONFIG.show_next_person
+    ),
+    show_package_name: Boolean(
+      incomingConfig?.show_package_name ?? DEFAULT_QUEUE_CONFIG.show_package_name
+    ),
+    show_position_number: Boolean(
+      incomingConfig?.show_position_number ?? DEFAULT_QUEUE_CONFIG.show_position_number
+    ),
+    text_shadow_enabled: Boolean(
+      incomingConfig?.text_shadow_enabled ?? DEFAULT_QUEUE_CONFIG.text_shadow_enabled
+    ),
+    compact_mode: Boolean(incomingConfig?.compact_mode ?? DEFAULT_QUEUE_CONFIG.compact_mode),
+    max_visible_items: Number(
+      incomingConfig?.max_visible_items ?? DEFAULT_QUEUE_CONFIG.max_visible_items
+    ),
+    position_top: Number(incomingConfig?.position_top ?? DEFAULT_QUEUE_CONFIG.position_top),
+    position_left: Number(
+      incomingConfig?.position_left ?? DEFAULT_QUEUE_CONFIG.position_left
+    ),
+    overlay_width: Number(incomingConfig?.overlay_width ?? DEFAULT_QUEUE_CONFIG.overlay_width),
+    title_font_size: Number(
+      incomingConfig?.title_font_size ?? DEFAULT_QUEUE_CONFIG.title_font_size
+    ),
+    subtitle_font_size: Number(
+      incomingConfig?.subtitle_font_size ?? DEFAULT_QUEUE_CONFIG.subtitle_font_size
+    ),
+    next_label_font_size: Number(
+      incomingConfig?.next_label_font_size ?? DEFAULT_QUEUE_CONFIG.next_label_font_size
+    ),
+    next_name_font_size: Number(
+      incomingConfig?.next_name_font_size ?? DEFAULT_QUEUE_CONFIG.next_name_font_size
+    ),
+    item_name_font_size: Number(
+      incomingConfig?.item_name_font_size ?? DEFAULT_QUEUE_CONFIG.item_name_font_size
+    ),
+    item_package_font_size: Number(
+      incomingConfig?.item_package_font_size ?? DEFAULT_QUEUE_CONFIG.item_package_font_size
+    ),
+    badge_font_size: Number(
+      incomingConfig?.badge_font_size ?? DEFAULT_QUEUE_CONFIG.badge_font_size
+    ),
+    line_gap: Number(incomingConfig?.line_gap ?? DEFAULT_QUEUE_CONFIG.line_gap),
+    background_opacity: Number(
+      incomingConfig?.background_opacity ?? DEFAULT_QUEUE_CONFIG.background_opacity
+    ),
+  });
 
   const checkAuth = async () => {
     try {
@@ -62,6 +163,25 @@ export default function LiveControlPage() {
     setConfig(data);
   };
 
+  const loadQueueConfig = async () => {
+    const response = await fetch(`${API_BASE}/api/admin/live-queue-config`, {
+      credentials: "include",
+    });
+
+    const data = await response.json();
+
+    if (response.status === 401) {
+      navigate("/admin-login");
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(data.error || "Nie udało się pobrać konfiguracji kolejki.");
+    }
+
+    setQueueConfig(normalizeQueueConfig(data));
+  };
+
   const loadLiveState = async () => {
     const response = await fetch(`${API_BASE}/api/live-question`);
     const data = await response.json();
@@ -87,7 +207,6 @@ export default function LiveControlPage() {
   const refreshAll = async () => {
     try {
       setError("");
-
       await Promise.all([loadLiveState(), loadQueue()]);
     } catch (err) {
       setError(err.message || "Błąd odświeżania danych.");
@@ -105,6 +224,7 @@ export default function LiveControlPage() {
         setError("");
 
         await loadConfig();
+        await loadQueueConfig();
         await refreshAll();
 
         intervalId = setInterval(() => {
@@ -241,8 +361,55 @@ export default function LiveControlPage() {
     }
   };
 
+  const saveQueueConfig = async () => {
+    try {
+      setError("");
+      setMessage("");
+      setSavingQueueConfig(true);
+
+      const response = await fetch(`${API_BASE}/api/admin/live-queue-config`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(queueConfig),
+      });
+
+      const data = await response.json();
+
+      if (response.status === 401) {
+        navigate("/admin-login");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || "Nie udało się zapisać konfiguracji kolejki.");
+      }
+
+      setQueueConfig(normalizeQueueConfig(data.config || data));
+      setMessage("Zapisano konfigurację kolejki OBS.");
+    } catch (err) {
+      setError(err.message || "Błąd zapisu konfiguracji kolejki.");
+    } finally {
+      setSavingQueueConfig(false);
+    }
+  };
+
+  const resetQueueConfig = () => {
+    setQueueConfig(DEFAULT_QUEUE_CONFIG);
+    setMessage("Ustawiono wartości domyślne. Kliknij „Zapisz konfigurację kolejki”, aby zapisać.");
+  };
+
   const handleConfigChange = (field, value) => {
     setConfig((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleQueueConfigChange = (field, value) => {
+    setQueueConfig((prev) => ({
       ...prev,
       [field]: value,
     }));
@@ -265,7 +432,6 @@ export default function LiveControlPage() {
   };
 
   const currentOrder = liveState?.order || null;
-  
 
   const styles = {
     page: {
@@ -278,7 +444,7 @@ export default function LiveControlPage() {
       boxSizing: "border-box",
     },
     wrap: {
-      maxWidth: "1280px",
+      maxWidth: "1420px",
       margin: "0 auto",
     },
     hero: {
@@ -303,7 +469,7 @@ export default function LiveControlPage() {
     },
     grid: {
       display: "grid",
-      gridTemplateColumns: "minmax(320px, 1.2fr) minmax(320px, 0.8fr)",
+      gridTemplateColumns: "minmax(360px, 1fr) minmax(360px, 0.9fr)",
       gap: "18px",
       alignItems: "start",
     },
@@ -320,6 +486,12 @@ export default function LiveControlPage() {
       fontSize: "22px",
       fontWeight: 900,
       color: "#fde68a",
+      marginBottom: "14px",
+    },
+    cardSubtitle: {
+      color: "#cbd5e1",
+      fontSize: "14px",
+      lineHeight: 1.5,
       marginBottom: "14px",
     },
     currentBox: {
@@ -419,7 +591,7 @@ export default function LiveControlPage() {
     },
     inputGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fit, minmax(170px, 1fr))",
       gap: "12px",
     },
     field: {
@@ -442,13 +614,29 @@ export default function LiveControlPage() {
       boxSizing: "border-box",
       outline: "none",
     },
+    checkboxGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+      gap: "8px 12px",
+      marginBottom: "14px",
+    },
     checkboxRow: {
       display: "flex",
       gap: "10px",
       alignItems: "center",
       color: "#f8fafc",
       fontWeight: 800,
-      marginBottom: "10px",
+      fontSize: "14px",
+    },
+    colorInput: {
+      width: "100%",
+      height: "42px",
+      borderRadius: "12px",
+      border: "1px solid rgba(255,255,255,0.10)",
+      background: "#0b1220",
+      padding: "5px",
+      boxSizing: "border-box",
+      cursor: "pointer",
     },
     queueList: {
       display: "grid",
@@ -499,8 +687,7 @@ export default function LiveControlPage() {
         <div style={styles.hero}>
           <div style={styles.title}>Pilot live</div>
           <div style={styles.subtitle}>
-            Sterowanie pytaniem na transmisji. To okno musi być aktywne, jeżeli
-            chcesz używać skrótów klawiaturowych.
+            Sterowanie pytaniem na transmisji, głosem oraz wyglądem kolejki OBS.
           </div>
         </div>
 
@@ -690,6 +877,442 @@ export default function LiveControlPage() {
                 </button>
               </div>
             </div>
+
+            <div style={styles.card}>
+              <div style={styles.cardTitle}>Konfiguracja kolejki OBS</div>
+              <div style={styles.cardSubtitle}>
+                Te ustawienia sterują wyglądem źródła OBS: /live-queue-overlay.
+                Po zapisie overlay odświeży wygląd automatycznie w ciągu kilku sekund.
+              </div>
+
+              <div style={styles.checkboxGrid}>
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.enabled}
+                    onChange={(e) =>
+                      handleQueueConfigChange("enabled", e.target.checked)
+                    }
+                  />
+                  Overlay kolejki włączony
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.show_live_badge}
+                    onChange={(e) =>
+                      handleQueueConfigChange("show_live_badge", e.target.checked)
+                    }
+                  />
+                  Pokaż LIVE QUEUE
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.show_title}
+                    onChange={(e) =>
+                      handleQueueConfigChange("show_title", e.target.checked)
+                    }
+                  />
+                  Pokaż tytuł
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.show_subtitle}
+                    onChange={(e) =>
+                      handleQueueConfigChange("show_subtitle", e.target.checked)
+                    }
+                  />
+                  Pokaż podtytuł
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.show_queue_count}
+                    onChange={(e) =>
+                      handleQueueConfigChange("show_queue_count", e.target.checked)
+                    }
+                  />
+                  Pokaż liczbę osób
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.show_updated_at}
+                    onChange={(e) =>
+                      handleQueueConfigChange("show_updated_at", e.target.checked)
+                    }
+                  />
+                  Pokaż aktualizację
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.show_next_person}
+                    onChange={(e) =>
+                      handleQueueConfigChange("show_next_person", e.target.checked)
+                    }
+                  />
+                  Pokaż następną osobę
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.show_package_name}
+                    onChange={(e) =>
+                      handleQueueConfigChange("show_package_name", e.target.checked)
+                    }
+                  />
+                  Pokaż pakiet
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.show_position_number}
+                    onChange={(e) =>
+                      handleQueueConfigChange("show_position_number", e.target.checked)
+                    }
+                  />
+                  Pokaż numer pozycji
+                </label>
+
+                <label style={styles.checkboxRow}>
+                  <input
+                    type="checkbox"
+                    checked={!!queueConfig.text_shadow_enabled}
+                    onChange={(e) =>
+                      handleQueueConfigChange("text_shadow_enabled", e.target.checked)
+                    }
+                  />
+                  Cień tekstu
+                </label>
+              </div>
+
+              <div style={styles.inputGrid}>
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Tytuł</div>
+                  <input
+                    style={styles.input}
+                    value={queueConfig.title_text || ""}
+                    onChange={(e) =>
+                      handleQueueConfigChange("title_text", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Podtytuł</div>
+                  <input
+                    style={styles.input}
+                    value={queueConfig.subtitle_text || ""}
+                    onChange={(e) =>
+                      handleQueueConfigChange("subtitle_text", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Tekst badge</div>
+                  <input
+                    style={styles.input}
+                    value={queueConfig.live_badge_text || ""}
+                    onChange={(e) =>
+                      handleQueueConfigChange("live_badge_text", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Ile osób pokazać</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={queueConfig.max_visible_items ?? 2}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "max_visible_items",
+                        Number(e.target.value || 1)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Pozycja od góry px</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    value={queueConfig.position_top ?? 40}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "position_top",
+                        Number(e.target.value || 0)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Pozycja od lewej px</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    value={queueConfig.position_left ?? 32}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "position_left",
+                        Number(e.target.value || 0)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Szerokość overlay px</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="180"
+                    value={queueConfig.overlay_width ?? 340}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "overlay_width",
+                        Number(e.target.value || 340)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Rozmiar tytułu</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="12"
+                    value={queueConfig.title_font_size ?? 42}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "title_font_size",
+                        Number(e.target.value || 42)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Rozmiar podtytułu</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="8"
+                    value={queueConfig.subtitle_font_size ?? 15}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "subtitle_font_size",
+                        Number(e.target.value || 15)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Rozmiar „następna osoba”</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="8"
+                    value={queueConfig.next_label_font_size ?? 12}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "next_label_font_size",
+                        Number(e.target.value || 12)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Rozmiar głównego imienia</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="14"
+                    value={queueConfig.next_name_font_size ?? 36}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "next_name_font_size",
+                        Number(e.target.value || 36)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Rozmiar imion na liście</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="10"
+                    value={queueConfig.item_name_font_size ?? 18}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "item_name_font_size",
+                        Number(e.target.value || 18)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Rozmiar pakietu</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="8"
+                    value={queueConfig.item_package_font_size ?? 11}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "item_package_font_size",
+                        Number(e.target.value || 11)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Rozmiar badge/meta</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="8"
+                    value={queueConfig.badge_font_size ?? 10}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "badge_font_size",
+                        Number(e.target.value || 10)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Odstępy</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="0"
+                    value={queueConfig.line_gap ?? 8}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "line_gap",
+                        Number(e.target.value || 0)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Tło 0–1</div>
+                  <input
+                    style={styles.input}
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={queueConfig.background_opacity ?? 0}
+                    onChange={(e) =>
+                      handleQueueConfigChange(
+                        "background_opacity",
+                        Number(e.target.value || 0)
+                      )
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Kolor akcentu</div>
+                  <input
+                    style={styles.colorInput}
+                    type="color"
+                    value={queueConfig.accent_color || "#f59e0b"}
+                    onChange={(e) =>
+                      handleQueueConfigChange("accent_color", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Kolor tytułu</div>
+                  <input
+                    style={styles.colorInput}
+                    type="color"
+                    value={queueConfig.title_color || "#fde68a"}
+                    onChange={(e) =>
+                      handleQueueConfigChange("title_color", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Kolor tekstu</div>
+                  <input
+                    style={styles.colorInput}
+                    type="color"
+                    value={queueConfig.text_color || "#ffffff"}
+                    onChange={(e) =>
+                      handleQueueConfigChange("text_color", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.inputLabel}>Kolor podtytułu/pakietu</div>
+                  <input
+                    style={styles.colorInput}
+                    type="color"
+                    value={queueConfig.subtitle_color || "#f5d0fe"}
+                    onChange={(e) =>
+                      handleQueueConfigChange("subtitle_color", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+
+              <div style={{ ...styles.buttonsGrid, marginTop: "16px" }}>
+                <button
+                  type="button"
+                  style={{
+                    ...styles.secondaryBtn,
+                    opacity: savingQueueConfig ? 0.7 : 1,
+                  }}
+                  onClick={saveQueueConfig}
+                  disabled={savingQueueConfig}
+                >
+                  {savingQueueConfig
+                    ? "Zapisywanie..."
+                    : "Zapisz konfigurację kolejki"}
+                </button>
+
+                <button
+                  type="button"
+                  style={styles.mutedBtn}
+                  onClick={resetQueueConfig}
+                >
+                  Przywróć domyślne
+                </button>
+              </div>
+            </div>
           </div>
 
           <div>
@@ -719,16 +1342,17 @@ export default function LiveControlPage() {
 
               <div style={styles.currentBox}>
                 <div style={styles.label}>Pergamin pytania</div>
-                <div style={styles.question}>
-                  /live-question-overlay
-                </div>
+                <div style={styles.question}>/live-question-overlay</div>
               </div>
 
               <div style={styles.currentBox}>
                 <div style={styles.label}>Kolejka live</div>
-                <div style={styles.question}>
-                  /live-queue-overlay
-                </div>
+                <div style={styles.question}>/live-queue-overlay</div>
+              </div>
+
+              <div style={styles.currentBox}>
+                <div style={styles.label}>Podgląd publiczny konfiguracji kolejki</div>
+                <div style={styles.question}>/api/live-queue-config</div>
               </div>
 
               <button
