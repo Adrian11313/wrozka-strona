@@ -176,12 +176,10 @@ export default function LiveQuestionOverlayPage() {
       left: "50%",
       bottom: "405px",
       width: "850px",
-      transform: "translateX(-50%) scaleX(0.03) translateY(18px)",
+      transform: "translateX(-50%) scaleX(0.055)",
       transformOrigin: "center center",
       opacity: 0,
-      filter: "blur(1.2px)",
-      transition:
-        "transform 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 240ms ease, filter 240ms ease",
+      filter: "blur(1px)",
     },
 
     visibleWrap: {
@@ -189,12 +187,9 @@ export default function LiveQuestionOverlayPage() {
       left: "50%",
       bottom: "405px",
       width: "850px",
-      transform: "translateX(-50%) scaleX(1) translateY(0)",
       transformOrigin: "center center",
       opacity: 1,
-      filter: "blur(0)",
-      transition:
-        "transform 620ms cubic-bezier(0.16, 1, 0.3, 1), opacity 280ms ease, filter 280ms ease",
+      animation: "parchmentOpen 760ms cubic-bezier(0.16, 1, 0.3, 1) both",
     },
 
     parchmentOuter: {
@@ -206,19 +201,35 @@ export default function LiveQuestionOverlayPage() {
       justifyContent: "center",
     },
 
+    centerRoll: {
+      position: "absolute",
+      left: "50%",
+      top: "50%",
+      width: "92px",
+      height: "118px",
+      transform: "translate(-50%, -50%)",
+      borderRadius: "999px",
+      background:
+        "linear-gradient(90deg, #4b2507 0%, #9a5a18 22%, #f8df9b 50%, #9a5a18 78%, #4b2507 100%)",
+      boxShadow:
+        "0 18px 34px rgba(0,0,0,0.44), inset 0 0 16px rgba(255,255,255,0.28)",
+      zIndex: 6,
+      animation: "centerRollFade 760ms cubic-bezier(0.16, 1, 0.3, 1) both",
+    },
+
     rollLeft: {
       position: "absolute",
       left: "-30px",
       top: "50%",
       width: "72px",
       height: "104px",
-      transform: "translateY(-50%)",
       borderRadius: "999px",
       background:
         "linear-gradient(90deg, #5b2d0a 0%, #9a5a18 22%, #f3d28b 52%, #a9671d 78%, #5b2d0a 100%)",
       boxShadow:
         "0 14px 26px rgba(0,0,0,0.42), inset 0 0 14px rgba(255,255,255,0.28), inset -10px 0 16px rgba(59,32,8,0.32)",
-      zIndex: 1,
+      zIndex: 5,
+      animation: "rollLeftOpen 760ms cubic-bezier(0.16, 1, 0.3, 1) both",
     },
 
     rollRight: {
@@ -227,13 +238,13 @@ export default function LiveQuestionOverlayPage() {
       top: "50%",
       width: "72px",
       height: "104px",
-      transform: "translateY(-50%)",
       borderRadius: "999px",
       background:
         "linear-gradient(90deg, #5b2d0a 0%, #a9671d 22%, #f3d28b 52%, #9a5a18 78%, #5b2d0a 100%)",
       boxShadow:
         "0 14px 26px rgba(0,0,0,0.42), inset 0 0 14px rgba(255,255,255,0.28), inset 10px 0 16px rgba(59,32,8,0.32)",
-      zIndex: 1,
+      zIndex: 5,
+      animation: "rollRightOpen 760ms cubic-bezier(0.16, 1, 0.3, 1) both",
     },
 
     rollCapLeft: {
@@ -242,12 +253,12 @@ export default function LiveQuestionOverlayPage() {
       top: "50%",
       width: "34px",
       height: "126px",
-      transform: "translateY(-50%)",
       borderRadius: "18px",
       background:
         "linear-gradient(180deg, #6b340a 0%, #d19945 42%, #7c3f10 100%)",
       boxShadow: "0 12px 22px rgba(0,0,0,0.34)",
-      zIndex: 0,
+      zIndex: 4,
+      animation: "rollCapLeftOpen 760ms cubic-bezier(0.16, 1, 0.3, 1) both",
     },
 
     rollCapRight: {
@@ -256,12 +267,12 @@ export default function LiveQuestionOverlayPage() {
       top: "50%",
       width: "34px",
       height: "126px",
-      transform: "translateY(-50%)",
       borderRadius: "18px",
       background:
         "linear-gradient(180deg, #6b340a 0%, #d19945 42%, #7c3f10 100%)",
       boxShadow: "0 12px 22px rgba(0,0,0,0.34)",
-      zIndex: 0,
+      zIndex: 4,
+      animation: "rollCapRightOpen 760ms cubic-bezier(0.16, 1, 0.3, 1) both",
     },
 
     parchment: {
@@ -278,6 +289,8 @@ export default function LiveQuestionOverlayPage() {
       boxShadow:
         "0 18px 38px rgba(0,0,0,0.42), inset 0 2px 12px rgba(255,255,255,0.62), inset 0 -10px 20px rgba(91,45,10,0.17)",
       overflow: "hidden",
+      transformOrigin: "center center",
+      animation: "paperBodyOpen 760ms cubic-bezier(0.16, 1, 0.3, 1) both",
     },
 
     parchmentTexture: {
@@ -311,9 +324,9 @@ export default function LiveQuestionOverlayPage() {
     content: {
       position: "relative",
       zIndex: 3,
-      opacity: shouldShow ? 1 : 0,
-      transform: shouldShow ? "translateY(0)" : "translateY(8px)",
-      transition: "opacity 280ms ease 260ms, transform 280ms ease 260ms",
+      opacity: 0,
+      transform: "translateY(8px)",
+      animation: "parchmentTextIn 340ms ease 520ms both",
     },
 
     name: {
@@ -354,8 +367,10 @@ export default function LiveQuestionOverlayPage() {
       lineHeight: 1,
       fontWeight: 900,
       boxShadow: "0 12px 24px rgba(0,0,0,0.30)",
-      zIndex: 4,
+      zIndex: 7,
       whiteSpace: "nowrap",
+      opacity: 0,
+      animation: "badgeIn 260ms ease 620ms both",
     },
 
     glow: {
@@ -370,6 +385,7 @@ export default function LiveQuestionOverlayPage() {
         "radial-gradient(circle, rgba(253,224,71,0.32) 0%, rgba(245,158,11,0.14) 34%, transparent 70%)",
       filter: "blur(14px)",
       zIndex: -1,
+      animation: "parchmentGlow 760ms cubic-bezier(0.16, 1, 0.3, 1) both",
     },
 
     error: {
@@ -389,10 +405,138 @@ export default function LiveQuestionOverlayPage() {
 
   return (
     <div style={styles.page}>
+      <style>
+        {`
+          @keyframes parchmentOpen {
+            0% {
+              transform: translateX(-50%) scaleX(0.055);
+              opacity: 0;
+              filter: blur(1px);
+            }
+            14% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateX(-50%) scaleX(1);
+              opacity: 1;
+              filter: blur(0);
+            }
+          }
+
+          @keyframes paperBodyOpen {
+            0% {
+              transform: scaleX(0.06);
+              opacity: 0.72;
+            }
+            18% {
+              opacity: 1;
+            }
+            100% {
+              transform: scaleX(1);
+              opacity: 1;
+            }
+          }
+
+          @keyframes rollLeftOpen {
+            0% {
+              transform: translateY(-50%) translateX(392px) rotate(0deg);
+            }
+            100% {
+              transform: translateY(-50%) translateX(0) rotate(-540deg);
+            }
+          }
+
+          @keyframes rollRightOpen {
+            0% {
+              transform: translateY(-50%) translateX(-392px) rotate(0deg);
+            }
+            100% {
+              transform: translateY(-50%) translateX(0) rotate(540deg);
+            }
+          }
+
+          @keyframes rollCapLeftOpen {
+            0% {
+              transform: translateY(-50%) translateX(392px);
+              opacity: 0;
+            }
+            15% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(-50%) translateX(0);
+              opacity: 1;
+            }
+          }
+
+          @keyframes rollCapRightOpen {
+            0% {
+              transform: translateY(-50%) translateX(-392px);
+              opacity: 0;
+            }
+            15% {
+              opacity: 1;
+            }
+            100% {
+              transform: translateY(-50%) translateX(0);
+              opacity: 1;
+            }
+          }
+
+          @keyframes centerRollFade {
+            0% {
+              opacity: 1;
+              transform: translate(-50%, -50%) scaleX(1);
+            }
+            34% {
+              opacity: 1;
+            }
+            100% {
+              opacity: 0;
+              transform: translate(-50%, -50%) scaleX(0.2);
+            }
+          }
+
+          @keyframes parchmentTextIn {
+            0% {
+              opacity: 0;
+              transform: translateY(8px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+
+          @keyframes badgeIn {
+            0% {
+              opacity: 0;
+              transform: translateX(-50%) translateY(8px);
+            }
+            100% {
+              opacity: 1;
+              transform: translateX(-50%) translateY(0);
+            }
+          }
+
+          @keyframes parchmentGlow {
+            0% {
+              opacity: 0;
+              transform: translate(-50%, -50%) scaleX(0.15);
+            }
+            100% {
+              opacity: 1;
+              transform: translate(-50%, -50%) scaleX(1);
+            }
+          }
+        `}
+      </style>
+
       <div style={shouldShow ? styles.visibleWrap : styles.hiddenWrap}>
         {shouldShow && (
           <div style={styles.parchmentOuter}>
             <div style={styles.glow} />
+            <div style={styles.centerRoll} />
 
             <div style={styles.rollCapLeft} />
             <div style={styles.rollCapRight} />
