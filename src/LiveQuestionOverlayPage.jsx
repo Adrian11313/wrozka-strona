@@ -111,6 +111,16 @@ export default function LiveQuestionOverlayPage() {
     return text;
   };
 
+  const shortenQuestion = (question, maxLength = 105) => {
+    const text = cleanQuestion(question);
+
+    if (text.length <= maxLength) {
+      return text;
+    }
+
+    return `${text.slice(0, maxLength).trim()}...`;
+  };
+
   const speakQuestion = (order) => {
     if (!("speechSynthesis" in window)) {
       return;
@@ -125,7 +135,7 @@ export default function LiveQuestionOverlayPage() {
 
     const utterance = new SpeechSynthesisUtterance(textToRead);
     utterance.lang = "pl-PL";
-    utterance.rate = 0.95;
+    utterance.rate = 0.94;
     utterance.pitch = 1.02;
     utterance.volume = 1;
 
@@ -151,123 +161,221 @@ export default function LiveQuestionOverlayPage() {
       height: "100vh",
       background: "transparent",
       margin: 0,
-      padding: "48px",
+      padding: 0,
       boxSizing: "border-box",
       fontFamily:
         "Georgia, 'Times New Roman', Inter, Arial, system-ui, sans-serif",
-      color: "#3b2208",
+      color: "#2b1605",
       overflow: "hidden",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
       pointerEvents: "none",
-    },
-    hiddenWrap: {
-      opacity: 0,
-      transform: "scale(0.96) translateY(20px)",
-      transition: "all 350ms ease",
-    },
-    visibleWrap: {
-      opacity: 1,
-      transform: "scale(1) translateY(0)",
-      transition: "all 350ms ease",
-    },
-    scroll: {
-      width: "min(900px, 88vw)",
-      minHeight: "420px",
       position: "relative",
-      borderRadius: "38px",
-      padding: "54px 62px",
+    },
+
+    hiddenWrap: {
+      position: "absolute",
+      left: "50%",
+      bottom: "405px",
+      width: "850px",
+      transform: "translateX(-50%) scaleX(0.03) translateY(18px)",
+      transformOrigin: "center center",
+      opacity: 0,
+      filter: "blur(1.2px)",
+      transition:
+        "transform 320ms cubic-bezier(0.4, 0, 0.2, 1), opacity 240ms ease, filter 240ms ease",
+    },
+
+    visibleWrap: {
+      position: "absolute",
+      left: "50%",
+      bottom: "405px",
+      width: "850px",
+      transform: "translateX(-50%) scaleX(1) translateY(0)",
+      transformOrigin: "center center",
+      opacity: 1,
+      filter: "blur(0)",
+      transition:
+        "transform 620ms cubic-bezier(0.16, 1, 0.3, 1), opacity 280ms ease, filter 280ms ease",
+    },
+
+    parchmentOuter: {
+      position: "relative",
+      width: "850px",
+      minHeight: "132px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+
+    rollLeft: {
+      position: "absolute",
+      left: "-30px",
+      top: "50%",
+      width: "72px",
+      height: "104px",
+      transform: "translateY(-50%)",
+      borderRadius: "999px",
+      background:
+        "linear-gradient(90deg, #5b2d0a 0%, #9a5a18 22%, #f3d28b 52%, #a9671d 78%, #5b2d0a 100%)",
+      boxShadow:
+        "0 14px 26px rgba(0,0,0,0.42), inset 0 0 14px rgba(255,255,255,0.28), inset -10px 0 16px rgba(59,32,8,0.32)",
+      zIndex: 1,
+    },
+
+    rollRight: {
+      position: "absolute",
+      right: "-30px",
+      top: "50%",
+      width: "72px",
+      height: "104px",
+      transform: "translateY(-50%)",
+      borderRadius: "999px",
+      background:
+        "linear-gradient(90deg, #5b2d0a 0%, #a9671d 22%, #f3d28b 52%, #9a5a18 78%, #5b2d0a 100%)",
+      boxShadow:
+        "0 14px 26px rgba(0,0,0,0.42), inset 0 0 14px rgba(255,255,255,0.28), inset 10px 0 16px rgba(59,32,8,0.32)",
+      zIndex: 1,
+    },
+
+    rollCapLeft: {
+      position: "absolute",
+      left: "-16px",
+      top: "50%",
+      width: "34px",
+      height: "126px",
+      transform: "translateY(-50%)",
+      borderRadius: "18px",
+      background:
+        "linear-gradient(180deg, #6b340a 0%, #d19945 42%, #7c3f10 100%)",
+      boxShadow: "0 12px 22px rgba(0,0,0,0.34)",
+      zIndex: 0,
+    },
+
+    rollCapRight: {
+      position: "absolute",
+      right: "-16px",
+      top: "50%",
+      width: "34px",
+      height: "126px",
+      transform: "translateY(-50%)",
+      borderRadius: "18px",
+      background:
+        "linear-gradient(180deg, #6b340a 0%, #d19945 42%, #7c3f10 100%)",
+      boxShadow: "0 12px 22px rgba(0,0,0,0.34)",
+      zIndex: 0,
+    },
+
+    parchment: {
+      position: "relative",
+      zIndex: 2,
+      width: "800px",
+      minHeight: "122px",
+      borderRadius: "16px",
+      padding: "18px 58px 20px",
       boxSizing: "border-box",
       background:
-        "radial-gradient(circle at 20% 12%, rgba(255,255,255,0.55), transparent 18%), radial-gradient(circle at 84% 82%, rgba(120,53,15,0.12), transparent 24%), linear-gradient(135deg, rgba(254,243,199,0.98) 0%, rgba(253,230,138,0.97) 42%, rgba(245,158,11,0.92) 100%)",
-      border: "2px solid rgba(120,53,15,0.34)",
+        "radial-gradient(circle at 12% 14%, rgba(255,255,255,0.72), transparent 18%), radial-gradient(circle at 82% 82%, rgba(120,53,15,0.16), transparent 28%), linear-gradient(180deg, rgba(255,249,226,0.99) 0%, rgba(246,228,170,0.99) 45%, rgba(214,171,90,0.98) 100%)",
+      border: "2px solid rgba(91,45,10,0.42)",
       boxShadow:
-        "0 18px 0 rgba(120,53,15,0.22), 0 34px 90px rgba(0,0,0,0.50), inset 0 0 40px rgba(255,255,255,0.34)",
+        "0 18px 38px rgba(0,0,0,0.42), inset 0 2px 12px rgba(255,255,255,0.62), inset 0 -10px 20px rgba(91,45,10,0.17)",
       overflow: "hidden",
     },
-    scrollBefore: {
+
+    parchmentTexture: {
       position: "absolute",
-      inset: "18px",
-      borderRadius: "28px",
-      border: "2px dashed rgba(120,53,15,0.24)",
+      inset: 0,
+      background:
+        "linear-gradient(90deg, rgba(91,45,10,0.12) 0%, transparent 8%, transparent 92%, rgba(91,45,10,0.12) 100%), repeating-linear-gradient(0deg, rgba(91,45,10,0.025) 0px, rgba(91,45,10,0.025) 1px, transparent 1px, transparent 7px)",
       pointerEvents: "none",
     },
-    topRibbon: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "10px",
-      padding: "10px 16px",
-      borderRadius: "999px",
-      background: "rgba(120,53,15,0.14)",
-      border: "1px solid rgba(120,53,15,0.18)",
-      color: "#78350f",
-      fontSize: "17px",
-      fontWeight: 900,
-      letterSpacing: "0.08em",
-      textTransform: "uppercase",
-      marginBottom: "22px",
+
+    topLine: {
+      position: "absolute",
+      left: "58px",
+      right: "58px",
+      top: "13px",
+      height: "1px",
+      background:
+        "linear-gradient(90deg, transparent 0%, rgba(91,45,10,0.34) 18%, rgba(91,45,10,0.38) 50%, rgba(91,45,10,0.34) 82%, transparent 100%)",
     },
-    dot: {
-      width: "10px",
-      height: "10px",
-      borderRadius: "999px",
-      background: "#be123c",
-      boxShadow: "0 0 14px rgba(190,18,60,0.7)",
+
+    bottomLine: {
+      position: "absolute",
+      left: "58px",
+      right: "58px",
+      bottom: "13px",
+      height: "1px",
+      background:
+        "linear-gradient(90deg, transparent 0%, rgba(91,45,10,0.26) 18%, rgba(91,45,10,0.32) 50%, rgba(91,45,10,0.26) 82%, transparent 100%)",
     },
+
+    content: {
+      position: "relative",
+      zIndex: 3,
+      opacity: shouldShow ? 1 : 0,
+      transform: shouldShow ? "translateY(0)" : "translateY(8px)",
+      transition: "opacity 280ms ease 260ms, transform 280ms ease 260ms",
+    },
+
     name: {
-      fontSize: "58px",
+      fontSize: "30px",
       lineHeight: 1,
       fontWeight: 900,
-      color: "#431407",
-      marginBottom: "10px",
-      textShadow: "0 2px 0 rgba(255,255,255,0.28)",
-      letterSpacing: "-0.035em",
-    },
-    packageName: {
-      width: "fit-content",
-      padding: "9px 15px",
-      borderRadius: "999px",
-      background: "rgba(67,20,7,0.12)",
-      color: "#78350f",
-      fontSize: "19px",
-      fontWeight: 900,
-      marginBottom: "30px",
-    },
-    questionBox: {
-      padding: "26px 28px",
-      borderRadius: "24px",
-      background: "rgba(255,255,255,0.28)",
-      border: "1px solid rgba(120,53,15,0.16)",
-      boxShadow: "inset 0 0 24px rgba(255,255,255,0.22)",
-    },
-    questionLabel: {
-      fontSize: "18px",
-      fontWeight: 900,
+      color: "#2b1605",
+      textAlign: "center",
       textTransform: "uppercase",
-      letterSpacing: "0.08em",
-      color: "#92400e",
-      marginBottom: "12px",
+      letterSpacing: "0.12em",
+      marginBottom: "10px",
+      textShadow: "0 1px 0 rgba(255,255,255,0.65)",
     },
+
     question: {
-      fontSize: "40px",
-      lineHeight: 1.18,
-      fontWeight: 900,
+      fontSize: "28px",
+      lineHeight: 1.16,
+      fontWeight: 700,
       color: "#3b2208",
+      textAlign: "center",
+      textShadow: "0 1px 0 rgba(255,255,255,0.55)",
       whiteSpace: "pre-wrap",
       wordBreak: "break-word",
     },
-    footer: {
-      marginTop: "24px",
-      fontSize: "17px",
-      fontWeight: 800,
-      color: "rgba(67,20,7,0.74)",
-      textAlign: "right",
+
+    packageBadge: {
+      position: "absolute",
+      left: "50%",
+      bottom: "-20px",
+      transform: "translateX(-50%)",
+      padding: "8px 18px",
+      borderRadius: "999px",
+      background:
+        "linear-gradient(90deg, rgba(245,158,11,0.98) 0%, rgba(253,224,71,0.98) 100%)",
+      color: "#2b1605",
+      border: "1px solid rgba(91,45,10,0.30)",
+      fontSize: "15px",
+      lineHeight: 1,
+      fontWeight: 900,
+      boxShadow: "0 12px 24px rgba(0,0,0,0.30)",
+      zIndex: 4,
+      whiteSpace: "nowrap",
     },
+
+    glow: {
+      position: "absolute",
+      left: "50%",
+      top: "50%",
+      width: "760px",
+      height: "150px",
+      transform: "translate(-50%, -50%)",
+      borderRadius: "999px",
+      background:
+        "radial-gradient(circle, rgba(253,224,71,0.32) 0%, rgba(245,158,11,0.14) 34%, transparent 70%)",
+      filter: "blur(14px)",
+      zIndex: -1,
+    },
+
     error: {
       position: "fixed",
-      left: "40px",
-      bottom: "40px",
+      left: "36px",
+      bottom: "36px",
       maxWidth: "620px",
       padding: "14px 18px",
       borderRadius: "18px",
@@ -283,26 +391,31 @@ export default function LiveQuestionOverlayPage() {
     <div style={styles.page}>
       <div style={shouldShow ? styles.visibleWrap : styles.hiddenWrap}>
         {shouldShow && (
-          <div style={styles.scroll}>
-            <div style={styles.scrollBefore} />
+          <div style={styles.parchmentOuter}>
+            <div style={styles.glow} />
 
-            <div style={styles.topRibbon}>
-              <span style={styles.dot} />
-              <span>Pytanie do kart</span>
-            </div>
+            <div style={styles.rollCapLeft} />
+            <div style={styles.rollCapRight} />
+            <div style={styles.rollLeft} />
+            <div style={styles.rollRight} />
 
-            <div style={styles.name}>{maskName(order.customer_name)}</div>
+            <div style={styles.parchment}>
+              <div style={styles.parchmentTexture} />
+              <div style={styles.topLine} />
+              <div style={styles.bottomLine} />
 
-            <div style={styles.packageName}>{order.package_name || "Pakiet"}</div>
+              <div style={styles.content}>
+                <div style={styles.name}>{maskName(order.customer_name)}</div>
 
-            <div style={styles.questionBox}>
-              <div style={styles.questionLabel}>Treść pytania</div>
-              <div style={styles.question}>
-                {cleanQuestion(order.question)}
+                <div style={styles.question}>
+                  {shortenQuestion(order.question)}
+                </div>
+              </div>
+
+              <div style={styles.packageBadge}>
+                {order.package_name || "Pytanie do kart"}
               </div>
             </div>
-
-            <div style={styles.footer}>Wróżka Kamelia ✦ live</div>
           </div>
         )}
       </div>
